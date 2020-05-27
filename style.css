@@ -33,9 +33,9 @@ a:visited, a:active {
 }
 
 .warning {
-    color: red;
-    font-size: 1.5rem;
-    font-weight: bold;
+    color: rgb(207,63,63);
+    font-size: 1.4rem;
+    font-weight: 600;
     margin-top: 0.25rem;
     margin-bottom: 0.5rem;
 }
