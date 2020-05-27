@@ -1,9 +1,245 @@
 var font = {};
 var fileName = "project.sb3";
-var fontSize = 16;
+var fontSize = 100;
 
 function md5(text) {
     return CryptoJS.MD5(text).toString();
+}
+
+function formatNumFixedLength(n) {
+
+    n = +n;
+
+    var len = 8; // May get garbage digits at the end if the length is too high
+    var s = '';
+
+    if (len < 1) {
+        return s;
+    }
+
+    if (Number.isNaN(n)) {
+        for (let i = 0; i < len; i++) {
+            s += 'NaN'.charAt(i % 3);
+        }
+        return s;
+    }
+
+    if (n === 0) {
+
+        s += '0';
+        if (len > 1) {
+            s += '.';
+        }
+
+        for (let i = 2; i < len; i++) {
+            s += '0';
+        }
+        return s;
+    }
+
+    if (n < 0) {
+        if (len < 2) {
+            s += '0';
+            return s;
+        }
+        n *= -1;
+        s += '-';
+        len--;
+    }
+
+    if (n === Infinity) {
+        n = Number.MAX_VALUE;
+    }
+
+    var exponent = Math.floor(Math.log10(n));
+    if (n >= (+('1e' + (exponent + 1)))) { // Remove effects of floating-point error
+        exponent += 1;
+    } else if (n < (+'1e' + exponent)) {
+        exponent -= 1;
+    }
+
+    var mantissa = n / (+('1e' + exponent)); // 10 ** exponent may introduce error, so this is used instead (base 10 with floats is weird anyway)
+
+    if (exponent < 0) {
+
+        if (len < 2) {
+            s += '0';
+            return s;
+        }
+
+        const fixedPrecision = len + exponent;
+        const expString = (''+(-1*exponent));
+
+        if ((fixedPrecision < len - expString.length - 3)) {
+
+            if (len < expString.length + 3) {
+                s += '0';
+                len--;
+                if (len > 0) {
+                    s += '.';
+                    len--;
+                }
+
+                for (let i = 0; i < len; i++) {
+                    s += '0';
+                }
+
+                return s;
+            }
+
+            len -= (expString.length + 2);
+
+            for (let i = 0; i < len; i++) {
+                if (len - i === 1) {
+                    s += ('' + Math.round(mantissa % 10)).charAt(0);
+                } else {
+                    s += ('' + Math.floor(mantissa % 10)).charAt(0);
+                }
+                if (i === 0 && len > 1) {
+                    s += '.';
+                    i++;
+                }
+
+                mantissa *= 10;
+            }
+
+            s += 'e-' + expString;
+            return s;
+
+        }
+
+        s += '.';
+        len--;
+
+        for (let i = 0; i < len; i++) {
+            n *= 10;
+            if (len - i === 1) {
+                s += ('' + Math.round(n % 10)).charAt(0);
+            } else {
+                s += ('' + Math.floor(n % 10)).charAt(0);
+            }
+        }
+
+        return s;
+
+    }
+    
+    if (exponent + 1 > len) {
+
+        const expString = (''+exponent);
+
+        if (expString.length + 2 > len) {
+            s += '9';
+            if (len < 2) {
+                return s;
+            }
+            if (len < 3) {
+                s += '9';
+                return s;
+            }
+            s += 'e';
+            for (let i = 2; i < len; i++) {
+                s += '9';
+            }
+            return s;
+        }
+
+        len -= (expString.length + 1);
+
+        for (let i = 0; i < len; i++) {
+            if (len - i === 1) {
+                s += ('' + Math.round(mantissa % 10)).charAt(0);
+            } else {
+                s += ('' + Math.floor(mantissa % 10)).charAt(0);
+            }
+            if (i === 0 && len > 1) {
+                s += '.';
+                i++;
+            }
+
+            mantissa *= 10;
+        }
+
+        s += 'e' + expString;
+        return s;
+
+    }
+
+
+    for (let i = 0; i < len; i++) {
+        if (len - i === 1) {
+            s += ('' + Math.round(mantissa % 10)).charAt(0);
+        } else {
+            s += ('' + Math.floor(mantissa % 10)).charAt(0);
+        }
+
+        if ((exponent === 0) && (len - i) > 1) {
+            s += '.';
+            i++;
+        }
+
+        mantissa *= 10;
+        exponent -= 1;
+    }
+
+    return s;
+
+}
+
+function formatNum(n) {
+    const PRECISION = 12;
+
+    n = +n;
+    if (Number.isNaN(n)) {
+        return 'NaN';
+    }
+
+    if (n === Infinity) {
+        return 'Infinity';
+    }
+
+    if (n === -Infinity) {
+        return '-Infinity';
+    }
+
+    if (n === 0) {
+        return '0';
+    }
+
+    const original = n;
+    if (n < 0) {
+        n *= -1;
+    }
+
+    var exponent = Math.floor(Math.log10(n));
+    if (n >= (+('1e' + (exponent + 1)))) { // Remove effects of floating-point error
+        exponent += 1;
+    } else if (n < (+'1e' + exponent)) {
+        exponent -= 1;
+    }
+
+    var mantissa = n / (+('1e' + exponent)); // 10 ** exponent may introduce error, so this is used instead (base 10 with floats is weird anyway)
+    mantissa = +mantissa.toFixed(PRECISION - 1);
+
+    var casted = ''+(+(''+(+mantissa.toFixed(PRECISION - 1)) + 'e' + ('' + exponent)));
+    if (casted.length > 1 && casted.charAt(0) === '0') {
+        casted = casted.slice(1);
+    }
+
+    const scientific = ''+mantissa + 'e' + ('' + exponent);
+
+    if (scientific.length < casted.length) {
+        if (original < 0) {
+            return '-' + scientific;
+        }
+        return scientific;
+    }
+
+    if (original < 0) {
+        return '-' + casted;
+    }
+    return casted;
+
 }
 
 function openFont(event) {
@@ -11,7 +247,7 @@ function openFont(event) {
     reader.onload = function() {
         font = opentype.parse(reader.result);
         const bounds = font.getPath('H', 0, 0, 1).getBoundingBox();
-        fontSize = 16 / (bounds.y2 - bounds.y1);
+        fontSize = 100 / (bounds.y2 - bounds.y1);
 
         var name = font.names.fullName.en;
         if (name !== void 0) {
