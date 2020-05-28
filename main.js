@@ -58,6 +58,79 @@ function formatNum(n) {
 
 }
 
+function round(n) {
+    return +((+n).toFixed(6));
+}
+
+class Line {
+
+    constructor() {
+        this.xmin = NaN;
+        this.xmax = NaN;
+        this.ymin = NaN;
+        this.ymax = NaN;
+
+        this.x0 = NaN;
+        this.x1 = NaN;
+        this.y0 = NaN;
+        this.y1 = NaN;
+
+        this.slope = NaN;
+    }
+
+    static createLines(x0, y0, x1, y1) {
+
+        // Creates an array of lines
+        // This is used instead of a constructor because vertical lines should be ignored
+
+        var x0 = round(x0);
+        var y0 = round(y0);
+        var x1 = round(x1);
+        var y1 = round(y1);
+
+        if (x0 === x1) {
+            return [];
+        }
+
+        if (x1 < x0) {
+            [x0, x1] = [x1, x0];
+            [y0, y1] = [y1, y0];
+        }
+
+        const newLine = new Line();
+        newLine.x0 = x0;
+        newLine.x1 = x1;
+        newLine.xmin = x0;
+        newLine.xmax = x1;
+        newLine.y0 = y0;
+        newLine.y1 = y1;
+        newLine.ymin = Math.min(y0, y1);
+        newLine.ymax = Math.max(y0, y1);
+        newLine.slope = (y1 - y0) / (x1 - x0);
+
+        return [newLine];
+        
+    }
+
+    yOfX(x) {
+        if (x < this.xmin || x > this.xmax) {
+            return NaN;
+        }
+
+        if (x === this.x0) {
+            return this.y0;
+        }
+
+        if (x === this.x1) {
+            return this.y1;
+        }
+
+        return slope * (x - this.x0) + this.y0;
+        
+    }
+
+}
+
 function openFont(event) {
     var reader = new FileReader();
     reader.onload = function() {
