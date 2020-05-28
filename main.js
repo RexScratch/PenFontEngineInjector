@@ -1,6 +1,6 @@
 var font = {};
 var fileName = "project.sb3";
-var fontSize = 100;
+var fontSize = 1;
 
 function formatNum(n) {
     const PRECISION = 12;
@@ -327,7 +327,7 @@ function openFont(event) {
     reader.onload = function() {
         font = opentype.parse(reader.result);
         const bounds = font.getPath('H', 0, 0, 1).getBoundingBox();
-        fontSize = 100 / (bounds.y2 - bounds.y1);
+        fontSize = 1 / (bounds.y2 - bounds.y1);
 
         var name = font.names.fullName.en;
         if (name !== void 0) {
@@ -505,6 +505,7 @@ function testKerning() {
             let value = font.getKerningValue(font.charToGlyph(charset.charAt(i)), font.charToGlyph(charset.charAt(j)));
 
             if (value !== 0) {
+                value = value / font.unitsPerEm * fontSize;
                 console.log(`${charset.charAt(i)}${charset.charAt(j)}: ${value}`);
                 kerningPairs++;
             }
