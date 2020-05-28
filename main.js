@@ -62,20 +62,33 @@ function round(n) {
     return +((+n).toFixed(6));
 }
 
+function lerp(value0, value1, t) {
+    return (1 - t) * value0 + t * value1;
+}
+
 class Line {
 
-    constructor() {
-        this.xmin = NaN;
-        this.xmax = NaN;
-        this.ymin = NaN;
-        this.ymax = NaN;
+    constructor(x0, y0, x1, y1) {
 
-        this.x0 = NaN;
-        this.x1 = NaN;
-        this.y0 = NaN;
-        this.y1 = NaN;
+        x0 = round(x0);
+        y0 = round(y0);
+        x1 = round(x1);
+        y1 = round(y1);
 
-        this.slope = NaN;
+        if (x1 < x0) {
+            [x0, x1] = [x1, x0];
+            [y0, y1] = [y1, y0];
+        }
+
+        this.x0 = x0;
+        this.x1 = x1;
+        this.xmin = x0;
+        this.xmax = x1;
+        this.y0 = y0;
+        this.y1 = y1;
+        this.ymin = Math.min(y0, y1);
+        this.ymax = Math.max(y0, y1);
+        this.slope = (y1 - y0) / (x1 - x0);
     }
 
     static createLines(x0, y0, x1, y1) {
@@ -97,18 +110,7 @@ class Line {
             [y0, y1] = [y1, y0];
         }
 
-        const newLine = new Line();
-        newLine.x0 = x0;
-        newLine.x1 = x1;
-        newLine.xmin = x0;
-        newLine.xmax = x1;
-        newLine.y0 = y0;
-        newLine.y1 = y1;
-        newLine.ymin = Math.min(y0, y1);
-        newLine.ymax = Math.max(y0, y1);
-        newLine.slope = (y1 - y0) / (x1 - x0);
-
-        return [newLine];
+        return [new Line(x0, y0, x1, y1)];
         
     }
 
@@ -125,8 +127,196 @@ class Line {
             return this.y1;
         }
 
-        return slope * (x - this.x0) + this.y0;
+        return this.slope * (x - this.x0) + this.y0;
         
+    }
+
+}
+
+class Curve {
+
+    // Represents a quadratic Bézier curve
+
+    constructor(x0, y0, x1, y1, x2, y2) {
+
+        x0 = round(x0);
+        y0 = round(y0);
+        x1 = round(x1);
+        y1 = round(y1);
+        x2 = round(x2);
+        y2 = round(y2);
+
+        if (x2 < x0) {
+            [x0, x2] = [x2, x0];
+            [y0, y2] = [y2, y0];
+        }
+
+        this.x0 = x0;
+        this.y0 = y0;
+        this.x1 = x2;
+        this.y1 = y2;
+
+        this.controlX = x1;
+        this.controlY = x2;
+
+        this.ax = x2 - 2 * x1 + x0;
+        this.bx = 2 * (x1 - x0);
+        this.cx = x0;
+
+        this.ay = y2 - 2 * y1 + y0;
+        this.by = 2 * (y1 - y0);
+        this.cy = y0;
+
+        this.xmin = x0;
+        this.xmax = x1;
+
+        // Solve for t when dy/dt = 0  
+        const extremeT = (-1 * this.by) / (2 * this.ay);
+        const extremeY = this.yOfT(extremeT);
+
+        this.ymin = Math.min(y0, y2, extremeY);
+        this.ymax = Math.max(y0, y2, extremeY);
+        
+    }
+
+    static createCurves(x0, y0, x1, y1, x2, y2, x3, y3) {
+
+        // Creates an array of curves
+        // This is used instead of a constructor because cubic curves need to be split
+        // Quadratic curves may also be split if they cannot be expressed as a function of x
+
+        x0 = round(x0);
+        y0 = round(y0);
+        x1 = round(x1);
+        y1 = round(y1);
+        x2 = round(x2);
+        y2 = round(y2);
+
+        if (x3 == null && y3 == null) {
+
+            // The curve is quadratic
+
+            if (x0 === x1 && x1 === 2) {
+                return [];
+            }
+
+            if (x2 < x0) {
+                [x0, x2] = [x2, x0];
+                [y0, y2] = [y2, y0];
+            }
+
+            if (x0 <= x1 && x1 <= x2) {
+                return [new Curve(x0, y0, x1, y2, x2, y2)];
+            }
+
+            // The curve cannot be expressed as a function of x
+
+            const ax = x2 - 2 * x1 + x0;
+            const bx = 2 * (x1 - x0);
+            const cx = x0;
+
+            const ay = y2 - 2 * y1 + y0;
+            const by = 2 * (y1 - y0);
+            const cy = y0;
+
+            // Solve for t when dx/dt = 0
+            const extremeT = (-1 * bx) / (2 * ax);
+            
+            const controlX0 = lerp(x0, x1, extremeT);
+            const controlY0 = lerp(y0, y1, extremeT);
+            const controlX1 = lerp(x1, x2, extremeT);
+            const controlY1 = lerp(y1, y2, extremeT);
+            const midX = lerp(controlX0, controlX1, extremeT);
+            const midY = lerp(controlY0, controlY1, extremeT);
+
+            return [new Curve(x0, y0, controlX0, controlY0, midX, midY), new Curve(midX, midY, controlX1, controlY1, x2, y2)];
+
+        }
+
+        // The curve is cubic
+
+        x3 = round(x3);
+        y3 = round(y3);
+
+        if (x0 === x1 && x1 === x2 & x2 === x3) {
+            return [];
+        }
+
+        return Curve.splitCubic(x0, y0, x1, y1, x2, y2, x3, y3, 4);
+
+    }
+
+    static splitCubic(x0, y0, x1, y1, x2, y2, x3, y3, parts) {
+
+        if (parts < 2) {
+            return [Curve.approxCubic(x0, y0, x1, y1, x2, y2, x3, y3)];
+        }
+
+        const t = 1 / parts;
+
+        var midX = lerp(x1, x2, t);
+        var midY = lerp(y1, y2, t);
+
+        const controlX0 = lerp(x0, x1, t);
+        const controlX1 = lerp(controlX0, midX, t);
+        const controlX3 = lerp(x2, x3, t);
+        const controlX2 = lerp(midX, controlX3, t);
+
+        const controlY0 = lerp(y0, y1, t);
+        const controlY1 = lerp(controlY0, midY, t);
+        const controlY3 = lerp(y2, y3, t);
+        const controlY2 = lerp(midY, controlY3, t);
+
+        midX = lerp(controlX1, controlX2, t);
+        midY = lerp(controlY1, controlY2, t);
+
+        var curves = [Curve.approxCubic(x0, y0, controlX0, controlY0, controlX1, controlY1, midX, midY)];
+        curves = curves.concat(Curve.splitCubic(midX, midY, controlX2, controlY2, controlX3, controlY3, x3, y3, parts - 1));
+
+        return curves;
+    }
+
+    static approxCubic(x0, y0, x1, y1, x2, y2, x3, y3) {
+
+        const controlX = (0.75 * x1 - 0.25 * x0) + (0.75 * x3 - 0.25 * x2);
+        const controlY = (0.75 * y1 - 0.25 * y0) + (0.75 * y3 - 0.25 * y2);
+
+        return new Curve(x0, y0, controlX, controlY, x3, y3);
+
+    }
+
+    xOfT(t) {
+        return this.ax * (t ** 2) + this.bx * t + this.cx;
+    }
+
+    yOfT(t) {
+        return this.ay * (t ** 2) + this.by * t + this.cy;
+    }
+
+    yOfX(x) {
+
+        if (x < this.xmin || x > this.xmax) {
+            return NaN;
+        }
+
+        if (x === this.x0) {
+            return this.y0;
+        }
+
+        if (x === this.x1) {
+            return this.y1;
+        }
+
+        var t = NaN;
+
+        if (this.ax === 0) {
+            t = (x - this.cx) / this.bx;
+        } else {
+            t = (-1 * this.bx + Math.sqrt(this.bx ** 2 - 4 * this.ax * (this.cx - x))) / (2 * this.ax);
+        }
+
+        return this.yOfT(t);
+
     }
 
 }
