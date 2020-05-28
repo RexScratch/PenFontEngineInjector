@@ -242,6 +242,7 @@ class Curve {
             return [];
         }
 
+        // Splits the cubic curves into 4 smaller cubic curves then approximates each smaller curve as a quadratic curve
         return Curve.splitCubic(x0, y0, x1, y1, x2, y2, x3, y3, 4);
 
     }
@@ -493,4 +494,18 @@ function download(data) {
     document.body.appendChild(link);
     link.click();
     alert("The project has been downloaded");
+}
+
+function testKerning() {
+    const charset = document.getElementById("charset").value;
+
+    for (let i = 0; i < charset.length; i++) {
+        for (let j = 0; j < charset.length; j++) {
+            let value = font.getKerningValue(font.charToGlyph(charset.charAt(i)), font.charToGlyph(charset.charAt(j)));
+
+            if (value !== 0) {
+                console.log(`${charset.charAt(i)}${charset.charAt(j)}: ${value}`);
+            }
+        }
+    }
 }
