@@ -498,6 +498,7 @@ function download(data) {
 
 function testKerning() {
     const charset = document.getElementById("charset").value;
+    var kerningPairs = 0;
 
     for (let i = 0; i < charset.length; i++) {
         for (let j = 0; j < charset.length; j++) {
@@ -505,7 +506,10 @@ function testKerning() {
 
             if (value !== 0) {
                 console.log(`${charset.charAt(i)}${charset.charAt(j)}: ${value}`);
+                kerningPairs++;
             }
         }
     }
+
+    return kerningPairs;
 }
