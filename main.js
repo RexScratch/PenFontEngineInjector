@@ -2,10 +2,6 @@ var font = {};
 var fileName = "project.sb3";
 var fontSize = 100;
 
-function md5(text) {
-    return CryptoJS.MD5(text).toString();
-}
-
 function formatNum(n) {
     const PRECISION = 12;
 
