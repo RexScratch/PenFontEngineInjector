@@ -397,7 +397,28 @@ class FontEngine {
 
     }
 
-    addChar(font, char) {
+    addNewChar() {
+        this.l.chData0.push('__');
+        this.l.chData1.push('none');
+        this.l.chData2.push('');
+        this.l.chData3.push('');
+        this.l.chData4.push('');
+        let index = this.l.chIndex.length;
+        this.l.chIndex.push(this.l.chData0.length);
+        this.l.chWidth.push(0);
+        this.l.chKern.push('');
+
+        for (let i = 0; i < 110; i++) {
+            this.l.chData0.push('');
+            this.l.chData1.push('');
+            this.l.chData2.push('');
+            this.l.chData3.push('');
+            this.l.chData4.push('');
+        }
+        return index;
+    }
+
+    addChar(char, font, fontSize) {
         
         let glyph = font.charToGlyph(char);
         if (glyph.unicode == null) {
@@ -407,31 +428,28 @@ class FontEngine {
         let index = NaN;
 
         if (this.addCostume(char + '_')) {
-            this.l.chData0.push('__');
-            this.l.chData1.push('');
-            this.l.chData2.push('');
-            this.l.chData3.push('');
-            this.l.chData4.push('');
-            index = this.l.chIndex.length;
-            this.l.chIndex.push(this.l.chData0.length);
-            this.l.chWidth.push(0);
-            this.l.chKern.push('');
-
-            for (let i = 0; i < 110; i++) {
-                this.l.chData0.push('');
-                this.l.chData1.push('');
-                this.l.chData2.push('');
-                this.l.chData3.push('');
-                this.l.chData4.push('');
-            }
+            index = this.addNewChar();
         } else {
-            index = this.costumeIndex[char + '_'];
+            index = this.costumeIndex[char + '_'] - 1;
         }
+
+        this.currentFont.push(index + 1);
+        this.currentFont.push(round(font.getAdvanceWidth(char, fontSize)));
+        this.currentFont.push(''); // kerning
+
+        let path = glyph.getPath(0, 0, fontSize);
+        let bounds = path.getBoundingBox();
+
+        this.currentFont.push(bounds.x1);
+        this.currentFont.push(bounds.x2);
+        this.currentFont.push(bounds.y1);
+        this.currentFont.push(bounds.y2);
+        this.currentFont.push('');
 
     }
 
-    addKerning(font, charset) {
-        
+    addKerning(charset, font, fontSize) {
+
     }
 
     updateFontLists(font) {
@@ -505,12 +523,16 @@ function inject(sb3) {
             charset = " " + charset;
         }
 
-        for (let char of charset) {
-            sprite.addChar(font, char);
+        if (sprite.l.chIndex.length === 0) {
+            sprite.addNewChar();
         }
 
-        sprite.addKerning(font, charset);
-        sprite.updateFontLists();
+        for (let char of charset) {
+            sprite.addChar(char, font, fontSize);
+        }
+
+        sprite.addKerning(charset, font, fontSize);
+        sprite.updateFontLists(font);
 
         sb3.file("project.json", JSON.stringify(project));
         sb3.generateAsync({type:"base64"}).then(download);
