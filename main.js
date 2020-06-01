@@ -430,6 +430,10 @@ class FontEngine {
 
     }
 
+    addKerning(font, charset) {
+        
+    }
+
     updateFontLists(font) {
 
     }
@@ -505,6 +509,7 @@ function inject(sb3) {
             sprite.addChar(font, char);
         }
 
+        sprite.addKerning(font, charset);
         sprite.updateFontLists();
 
         sb3.file("project.json", JSON.stringify(project));
