@@ -2,6 +2,11 @@ font = {};
 fileName = "project.sb3";
 fontSize = 1;
 
+function alertError(message) {
+    alert('Error: ' + message);
+    throw Error;
+}
+
 function formatNum(n) {
     const PRECISION = 12;
 
@@ -325,9 +330,12 @@ class Curve {
 class Sprite {
     
     constructor(project, spriteName) {
+
         let targets = project.targets;
+
         for (let i = 0; i < targets.length; i++) {
-            if (targets[i].name === spriteNname) {
+
+            if (targets[i].name === spriteName) {
                 let sprite = targets[i];
                 for (let prop in sprite) {
                     if (sprite.hasOwnProperty(prop)) {
@@ -336,7 +344,19 @@ class Sprite {
                 }
                 break;
             }
+
         }
+
+        alertError(`Sprite \'${spriteName}\' does not exist`);
+    }
+
+    getList(listName) {
+        const lists = Object.values(this.lists);
+        for (let list of lists) {
+            if (list[0] === listName) return list[1];
+        }
+        
+        alertError(`List \'${listName}'\ does not exist`);
     }
 
 }
@@ -375,24 +395,31 @@ function inject(sb3) {
     sb3.file("project.json").async("string").then(injectData);
 
     function injectData(project) {
+
         project = JSON.parse(project);
-        sprite = getSprite(project, spriteName);
-        if (sprite === "Error") {
-            alert("Error: Sprite does not exist");
-            return;
+        sprite = new Sprite(project, spriteName);
+
+        const listNames = [
+            'chIndex',
+            'chWidth',
+            'chKern',
+            'chData0',
+            'chData1',
+            'chData2',
+            'chData3',
+            'fontName',
+            'fontLicense',
+            'fontIndex',
+            'fontData'
+        ];
+        const lists = {};
+
+        for (let listName of listNames) {
+            lists[listName] = sprite.getList(listName);
         }
-        const fontNames = getList(sprite, "_fontNames");
-        if (fontNames === "Error") {
-            alert("Error: Sprite does not have \"_fontNames\" list");
-            return;
-        }
-        const charWidths = getList(sprite, "_charWidths");
-        if (charWidths === "Error") {
-            alert("Error: Sprite does not have \"_charWidths\" list");
-            return;
-        }
-        charWidths[0] = 0;
-        charWidths[1] = 0;
+        
+        // charWidths[0] = 0;
+        // charWidths[1] = 0;
         
         fontName = document.getElementById("fontName").value;
         let index = fontNames.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
@@ -483,21 +510,7 @@ function inject(sb3) {
 
     }
 
-    function getSprite(data, spriteName) {
-        data = data.targets;
-        for (let i = 0; i < data.length; i++) {
-            if (data[i].name === spriteName) return data[i];
-        }
-        return "Error";
-    }
-
-    function getList(sprite, listName) {
-        const lists = Object.values(sprite.lists);
-        for (let i = 0; i < lists.length; i++) {
-            if (lists[i][0] === listName) return lists[i][1];
-        }
-        return "Error";
-    }
+    
 
 }
 
