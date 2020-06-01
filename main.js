@@ -398,10 +398,12 @@ class FontEngine {
 
     addChar(font, char) {
         
-        glyph = font.charToGlyph(char);
+        let glyph = font.charToGlyph(char);
         if (glyph.unicode == null) {
             return;
         }
+
+        let index = NaN;
 
         if (this.addCostume(char + '_')) {
             this.l.chData0.push('__');
@@ -492,6 +494,10 @@ function inject(sb3) {
         let charset = document.getElementById("charset").value;
         if (charset.indexOf(" ") === -1) {
             charset = " " + charset;
+        }
+
+        for (let char of charset) {
+            sprite.addChar(font, char);
         }
 
         sb3.file("project.json", JSON.stringify(project));
