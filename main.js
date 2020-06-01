@@ -218,11 +218,14 @@ class Curve {
 
             const ax = x2 - 2 * x1 + x0;
             const bx = 2 * (x1 - x0);
+
+            /*
             const cx = x0;
 
             const ay = y2 - 2 * y1 + y0;
             const by = 2 * (y1 - y0);
             const cy = y0;
+            */
 
             // Solve for t when dx/dt = 0
             const extremeT = (-1 * bx) / (2 * ax);
@@ -410,6 +413,14 @@ class FontEngine {
             this.l.chIndex.push(this.l.chData0.length);
             this.l.chWidth.push(0);
             this.l.chKern.push('');
+
+            for (let i = 0; i < 110; i++) {
+                this.l.chData0.push('');
+                this.l.chData1.push('');
+                this.l.chData2.push('');
+                this.l.chData3.push('');
+                this.l.chData4.push('');
+            }
         } else {
             index = this.costumeIndex[char + '_'];
         }
