@@ -354,6 +354,7 @@ class FontEngine {
                 this.baseCostume = this.costumes[1];
 
                 this.l = {};
+                this.currentFont = [];
 
                 return this;
             }
@@ -429,6 +430,10 @@ class FontEngine {
 
     }
 
+    updateFontLists(font) {
+
+    }
+
 }
 
 function openFont(event) {
@@ -499,6 +504,8 @@ function inject(sb3) {
         for (let char of charset) {
             sprite.addChar(font, char);
         }
+
+        sprite.updateFontLists();
 
         sb3.file("project.json", JSON.stringify(project));
         sb3.generateAsync({type:"base64"}).then(download);
