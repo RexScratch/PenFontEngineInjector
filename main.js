@@ -1,6 +1,6 @@
-var font = {};
-var fileName = "project.sb3";
-var fontSize = 1;
+font = {};
+fileName = "project.sb3";
+fontSize = 1;
 
 function formatNum(n) {
     const PRECISION = 12;
@@ -27,17 +27,17 @@ function formatNum(n) {
         n *= -1;
     }
 
-    var exponent = Math.floor(Math.log10(n));
+    let exponent = Math.floor(Math.log10(n));
     if (n >= (+('1e' + (exponent + 1)))) { // Remove effects of floating-point error
         exponent += 1;
     } else if (n < (+'1e' + exponent)) {
         exponent -= 1;
     }
 
-    var mantissa = n / (+('1e' + exponent)); // 10 ** exponent may introduce error, so this is used instead (base 10 with floats is weird anyway)
+    let mantissa = n / (+('1e' + exponent)); // 10 ** exponent may introduce error, so this is used instead (base 10 with floats is weird anyway)
     mantissa = +mantissa.toFixed(PRECISION - 1);
 
-    var casted = ''+(+(''+(+mantissa.toFixed(PRECISION - 1)) + 'e' + ('' + exponent)));
+    let casted = ''+(+(''+(+mantissa.toFixed(PRECISION - 1)) + 'e' + ('' + exponent)));
     if (casted.length > 1 && casted.charAt(0) === '0') {
         casted = casted.slice(1);
     }
@@ -96,10 +96,10 @@ class Line {
         // Creates an array of lines
         // This is used instead of a constructor because vertical lines should be ignored
 
-        var x0 = round(x0);
-        var y0 = round(y0);
-        var x1 = round(x1);
-        var y1 = round(y1);
+        x0 = round(x0);
+        y0 = round(y0);
+        x1 = round(x1);
+        y1 = round(y1);
 
         if (x0 === x1) {
             return [];
@@ -255,8 +255,8 @@ class Curve {
 
         const t = 1 / parts;
 
-        var midX = lerp(x1, x2, t);
-        var midY = lerp(y1, y2, t);
+        let midX = lerp(x1, x2, t);
+        let midY = lerp(y1, y2, t);
 
         const controlX0 = lerp(x0, x1, t);
         const controlX1 = lerp(controlX0, midX, t);
@@ -271,7 +271,7 @@ class Curve {
         midX = lerp(controlX1, controlX2, t);
         midY = lerp(controlY1, controlY2, t);
 
-        var curves = [Curve.approxCubic(x0, y0, controlX0, controlY0, controlX1, controlY1, midX, midY)];
+        let curves = [Curve.approxCubic(x0, y0, controlX0, controlY0, controlX1, controlY1, midX, midY)];
         curves = curves.concat(Curve.splitCubic(midX, midY, controlX2, controlY2, controlX3, controlY3, x3, y3, parts - 1));
 
         return curves;
@@ -308,7 +308,7 @@ class Curve {
             return this.y1;
         }
 
-        var t = NaN;
+        let t = NaN;
 
         if (this.ax === 0) {
             t = (x - this.cx) / this.bx;
@@ -322,14 +322,33 @@ class Curve {
 
 }
 
+class Sprite {
+    
+    constructor(project, spriteName) {
+        let targets = project.targets;
+        for (let i = 0; i < targets.length; i++) {
+            if (targets[i].name === spriteNname) {
+                let sprite = targets[i];
+                for (let prop in sprite) {
+                    if (sprite.hasOwnProperty(prop)) {
+                        this[prop] = sprite[prop];
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+}
+
 function openFont(event) {
-    var reader = new FileReader();
+    let reader = new FileReader();
     reader.onload = function() {
         font = opentype.parse(reader.result);
         const bounds = font.getPath('H', 0, 0, 1).getBoundingBox();
         fontSize = 1 / (bounds.y2 - bounds.y1);
 
-        var name = font.names.fullName.en;
+        let name = font.names.fullName.en;
         if (name !== void 0) {
             name = name.replace(" Regular", "").replace(" Normal", "").replace(" Book", "");
             name = name.replace(" regular", "").replace(" normal", "").replace(" book", "");
@@ -341,7 +360,7 @@ function openFont(event) {
 }
 
 function openSb3() {
-    var reader = new FileReader();
+    let reader = new FileReader();
     reader.onload = function() {
         JSZip.loadAsync(reader.result).then(inject);
     }
@@ -376,9 +395,9 @@ function inject(sb3) {
         charWidths[1] = 0;
         
         fontName = document.getElementById("fontName").value;
-        var index = fontNames.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
-        var costumeIndex;
-        var fontId;
+        let index = fontNames.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
+        let costumeIndex;
+        let fontId;
         if (index === -1) {
             index = fontNames.length;
             fontNames.push(fontName.toLowerCase());
@@ -401,9 +420,8 @@ function inject(sb3) {
                 costumeIndex++;
             }
 
-            var assetFile;
             while ((sprite.costumes.length > costumeIndex) && (sprite.costumes[costumeIndex].name.slice(0,2) === fontId)) {
-                assetFile = sprite.costumes[costumeIndex].md5ext;
+                let assetFile = sprite.costumes[costumeIndex].md5ext;
                 if (costumes[assetFile] === void 0) sb3.remove(assetFile);
                 sprite.costumes.splice(costumeIndex, 1);
                 charWidths.splice(costumeIndex, 1);
@@ -413,19 +431,16 @@ function inject(sb3) {
 
         }
 
-        var charset = document.getElementById("charset").value;
+        let charset = document.getElementById("charset").value;
         if (charset.indexOf(" ") === -1) {
             charset = " " + charset;
         }
 
-        var path;
-        var svg;
-        var md5Value;
         if (costumeIndex === -1) {
             for (let i = 0; i < charset.length; i++) {
-                path = font.getPath(charset.charAt(i), 240, 180, fontSize).toPathData(3);
-                svg = `<svg width="480px" height="360px" xmlns="http://www.w3.org/2000/svg"><path fill="#F00" d="${path}"/></svg>`
-                md5Value = md5(svg);
+                let path = font.getPath(charset.charAt(i), 240, 180, fontSize).toPathData(3);
+                let svg = `<svg width="480px" height="360px" xmlns="http://www.w3.org/2000/svg"><path fill="#F00" d="${path}"/></svg>`
+                let md5Value = md5(svg);
 
                 sprite.costumes.push({
                     assetId: md5Value,
@@ -442,9 +457,9 @@ function inject(sb3) {
             }
         } else {
             for (let i = 0; i < charset.length; i++) {
-                path = font.getPath(charset.charAt(i), 240, 180, fontSize).toPathData(3);
-                svg = `<svg width="480px" height="360px" xmlns="http://www.w3.org/2000/svg"><path fill="#F00" d="${path}"/></svg>`
-                md5Value = md5(svg);
+                let path = font.getPath(charset.charAt(i), 240, 180, fontSize).toPathData(3);
+                let svg = `<svg width="480px" height="360px" xmlns="http://www.w3.org/2000/svg"><path fill="#F00" d="${path}"/></svg>`
+                let md5Value = md5(svg);
 
                 sprite.costumes.splice(costumeIndex, 0, {
                     assetId: md5Value,
@@ -487,7 +502,7 @@ function inject(sb3) {
 }
 
 function download(data) {
-    var link = document.createElement("a");
+    let link = document.createElement("a");
     link.style.display = "none";
     link.download = fileName;
     link.href = "data:application/zip;base64," + data;
@@ -498,7 +513,7 @@ function download(data) {
 
 function testKerning() {
     const charset = document.getElementById("charset").value;
-    var kerningPairs = 0;
+    let kerningPairs = 0;
 
     for (let i = 0; i < charset.length; i++) {
         for (let j = 0; j < charset.length; j++) {
