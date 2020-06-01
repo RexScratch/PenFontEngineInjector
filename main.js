@@ -333,16 +333,24 @@ class Sprite {
 
         let targets = project.targets;
 
-        for (let i = 0; i < targets.length; i++) {
+        for (let target of targets) {
 
-            if (targets[i].name === spriteName) {
-                let sprite = targets[i];
-                for (let prop in sprite) {
-                    if (sprite.hasOwnProperty(prop)) {
-                        this[prop] = sprite[prop];
+            if (target.name === spriteName) {
+
+                for (let prop in target) {
+                    if (target.hasOwnProperty(prop)) {
+                        this[prop] = target[prop];
                     }
                 }
-                break;
+
+                this.costumeNames = {};
+                for (let costume of this.costumes) {
+                    this.costumeNames[costume.name] = true;
+                }
+
+                this.firstCostume = this.costumes[0];
+
+                return this;
             }
 
         }
@@ -357,6 +365,27 @@ class Sprite {
         }
         
         alertError(`List \'${listName}'\ does not exist`);
+    }
+
+    addCostume(costumeName) {
+        if (this.costumeNames.hasOwnProperty(costumeName)) {
+            return false;
+        }
+
+        this.costumes.push({
+            assetId: this.firstCostume.assetId,
+            name: costumeName,
+            md5ext: this.firstCostume.md5ext,
+            dataFormat: this.firstCostume.dataFormat,
+            bitmapResolution: this.firstCostume.bitmapResolution,
+            rotationCenterX: this.firstCostume.rotationCenterX,
+            rotationCenterY: this.firstCostume.rotationCenterY
+        });
+
+        this.costumeNames[costumeName] = true;
+
+        return true;
+
     }
 
 }
