@@ -343,9 +343,9 @@ class FontEngine {
                     }
                 }
 
-                this.costumeNames = {};
-                for (let costume of this.costumes) {
-                    this.costumeNames[costume.name] = true;
+                this.costumeIndex = {};
+                for (let i = 0; i < this.costumes.length; i++) {
+                    this.costumeIndex[this.costumes[i].name] = i;
                 }
 
                 this.baseCostume = this.costumes[1];
@@ -373,7 +373,7 @@ class FontEngine {
     }
 
     addCostume(costumeName) {
-        if (this.costumeNames.hasOwnProperty(costumeName)) {
+        if (this.costumeIndex.hasOwnProperty(costumeName)) {
             return false;
         }
 
@@ -387,7 +387,7 @@ class FontEngine {
             rotationCenterY: this.baseCostume.rotationCenterY
         });
 
-        this.costumeNames[costumeName] = true;
+        this.costumeIndex[costumeName] = this.costumes.length - 1;
 
         return true;
 
@@ -400,14 +400,18 @@ class FontEngine {
             return;
         }
 
-        if (this.addCostume(char)) {
-            this.l.chData0.push('_' + char);
+        if (this.addCostume(char + '_')) {
+            this.l.chData0.push('__');
             this.l.chData1.push('');
             this.l.chData2.push('');
             this.l.chData3.push('');
+            this.l.chData4.push('');
+            index = this.l.chIndex.length;
             this.l.chIndex.push(this.l.chData0.length);
             this.l.chWidth.push(0);
             this.l.chKern.push('');
+        } else {
+            index = this.costumeIndex[char + '_'];
         }
 
     }
@@ -460,6 +464,7 @@ function inject(sb3) {
             'chData1',
             'chData2',
             'chData3',
+            'chData4',
             'fontName',
             'fontLicense',
             'fontIndex',
@@ -471,95 +476,17 @@ function inject(sb3) {
         }
         
         fontName = document.getElementById("fontName").value;
-        let index = fontNames.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
-        let costumeIndex;
-        let fontId;
-        if (index === -1) {
-            index = fontNames.length;
-            fontNames.push(fontName.toLowerCase());
-            costumeIndex = -1;
-            fontId = (index + 1) + ":";
-        } else {
-
-            const costumes = {};
-            for (let i = 0; i < project.targets.length; i++) {
-                if (project.targets[i].name !== spriteName) {
-                    for (let j = 0; j < project.targets[i].costumes.length; j++) {
-                        costumes[project.targets[i].costumes[j].md5ext] = true;
-                    }
-                }
-            }
-
-            fontId = (index + 1) + ":";
-            costumeIndex = 0;
-            while (sprite.costumes[costumeIndex].name.slice(0,2) !== fontId) {
-                costumeIndex++;
-            }
-
-            while ((sprite.costumes.length > costumeIndex) && (sprite.costumes[costumeIndex].name.slice(0,2) === fontId)) {
-                let assetFile = sprite.costumes[costumeIndex].md5ext;
-                if (costumes[assetFile] === void 0) sb3.remove(assetFile);
-                sprite.costumes.splice(costumeIndex, 1);
-                charWidths.splice(costumeIndex, 1);
-            }
-
-            if (index === fontNames.length - 1) costumeIndex = -1;
-
-        }
+        let index = sprite.l.fontName.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
 
         let charset = document.getElementById("charset").value;
         if (charset.indexOf(" ") === -1) {
             charset = " " + charset;
         }
 
-        if (costumeIndex === -1) {
-            for (let i = 0; i < charset.length; i++) {
-                let path = font.getPath(charset.charAt(i), 240, 180, fontSize).toPathData(3);
-                let svg = `<svg width="480px" height="360px" xmlns="http://www.w3.org/2000/svg"><path fill="#F00" d="${path}"/></svg>`
-                let md5Value = md5(svg);
-
-                sprite.costumes.push({
-                    assetId: md5Value,
-                    name: fontId + charset.charAt(i),
-                    md5ext: md5Value + ".svg",
-                    dataFormat: "svg",
-                    bitmapResolution: 1,
-                    rotationCenterX: 240,
-                    rotationCenterY: 180
-                });
-                charWidths.push(Math.round(1000 * font.getAdvanceWidth(charset.charAt(i), fontSize))/16000);
-
-                sb3.file(md5Value + ".svg", svg);
-            }
-        } else {
-            for (let i = 0; i < charset.length; i++) {
-                let path = font.getPath(charset.charAt(i), 240, 180, fontSize).toPathData(3);
-                let svg = `<svg width="480px" height="360px" xmlns="http://www.w3.org/2000/svg"><path fill="#F00" d="${path}"/></svg>`
-                let md5Value = md5(svg);
-
-                sprite.costumes.splice(costumeIndex, 0, {
-                    assetId: md5Value,
-                    name: fontId + charset.charAt(i),
-                    md5ext: md5Value + ".svg",
-                    dataFormat: "svg",
-                    bitmapResolution: 1,
-                    rotationCenterX: 240,
-                    rotationCenterY: 180
-                });
-                charWidths.splice(costumeIndex, 0, Math.round(1000 * font.getAdvanceWidth(charset.charAt(i), fontSize))/16000);
-
-                sb3.file(md5Value + ".svg", svg);
-                
-                costumeIndex++;
-            }
-        }
-
         sb3.file("project.json", JSON.stringify(project));
         sb3.generateAsync({type:"base64"}).then(download);
 
     }
-
-    
 
 }
 
