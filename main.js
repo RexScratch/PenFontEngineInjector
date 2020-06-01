@@ -452,8 +452,59 @@ class FontEngine {
 
     }
 
-    updateFontLists(font) {
+    updateFontLists(font, fontName) {
 
+        let index = sprite.l.fontName.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
+        
+        let names = font.names;
+        let language = null;
+        if (names.copyright.hasOwnProperty('en')) {
+            language = 'en';
+        } else {
+            for (lang in names.copyright) {
+                if (names.copyright.hasOwnProperty(lang)) {
+                    language = lang;
+                    break;
+                }
+            }
+        }
+
+        let license = '';
+        if (language != null) {
+            license = `${names.copyright[language]} ${names.license[language]}`;
+        }
+
+        if (index === -1) {
+
+            this.l.fontName.push(fontName.toLowerCase());
+            this.l.fontLicense.push(license);
+            this.l.fontIndex.push(this.l.fontData.length + 1);
+            for (let item of this.currentFont) {
+                this.l.fontData.push(item);
+            }
+
+        } else {
+
+            this.l.fontLicense[index] = license;
+
+            let fontDataIndex = this.l.fontIndex[index];
+            let currentLen = 0;
+
+            if (index + 1 === this.l.fontName.length) {
+                currentLen = this.l.fontData.length - fontDataIndex;
+            } else {
+                currentLen = this.l.fontIndex[index + 1] - fontDataIndex;
+
+                let indexDiff = this.currentFont.length - currentLen;
+                for (let i = index + 1; i < this.l.fontIndex.length; i++) {
+                    this.l.fontIndex[i] += indexDiff;
+                }
+                
+            }
+
+            this.l.fontData.splice(fontDataIndex - 1, currentLen, ...this.currentFont);
+            
+        }
     }
 
 }
@@ -516,7 +567,6 @@ function inject(sb3) {
         }
         
         fontName = document.getElementById("fontName").value;
-        let index = sprite.l.fontName.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
 
         let charset = document.getElementById("charset").value;
         if (charset.indexOf(" ") === -1) {
@@ -532,7 +582,7 @@ function inject(sb3) {
         }
 
         sprite.addKerning(charset, font, fontSize);
-        sprite.updateFontLists(font);
+        sprite.updateFontLists(font, fontName);
 
         sb3.file("project.json", JSON.stringify(project));
         sb3.generateAsync({type:"base64"}).then(download);
