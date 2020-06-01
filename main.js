@@ -348,7 +348,7 @@ class FontEngine {
                     this.costumeNames[costume.name] = true;
                 }
 
-                this.firstCostume = this.costumes[0];
+                this.baseCostume = this.costumes[1];
 
                 this.l = {};
 
@@ -378,13 +378,13 @@ class FontEngine {
         }
 
         this.costumes.push({
-            assetId: this.firstCostume.assetId,
+            assetId: this.baseCostume.assetId,
             name: costumeName,
-            md5ext: this.firstCostume.md5ext,
-            dataFormat: this.firstCostume.dataFormat,
-            bitmapResolution: this.firstCostume.bitmapResolution,
-            rotationCenterX: this.firstCostume.rotationCenterX,
-            rotationCenterY: this.firstCostume.rotationCenterY
+            md5ext: this.baseCostume.md5ext,
+            dataFormat: this.baseCostume.dataFormat,
+            bitmapResolution: this.baseCostume.bitmapResolution,
+            rotationCenterX: this.baseCostume.rotationCenterX,
+            rotationCenterY: this.baseCostume.rotationCenterY
         });
 
         this.costumeNames[costumeName] = true;
