@@ -327,7 +327,7 @@ class Curve {
 
 }
 
-class Sprite {
+class FontEngine {
     
     constructor(project, spriteName) {
 
@@ -350,6 +350,8 @@ class Sprite {
 
                 this.firstCostume = this.costumes[0];
 
+                this.l = {};
+
                 return this;
             }
 
@@ -361,10 +363,13 @@ class Sprite {
     getList(listName) {
         const lists = Object.values(this.lists);
         for (let list of lists) {
-            if (list[0] === listName) return list[1];
+            if (list[0] === ('_' + listName)) {
+                this.l[listName] = list[1];
+                return true;
+            }
         }
         
-        alertError(`List \'${listName}'\ does not exist`);
+        alertError(`List \'_${listName}'\ does not exist`);
     }
 
     addCostume(costumeName) {
@@ -385,6 +390,25 @@ class Sprite {
         this.costumeNames[costumeName] = true;
 
         return true;
+
+    }
+
+    addChar(font, char) {
+        
+        glyph = font.charToGlyph(char);
+        if (glyph.unicode == null) {
+            return;
+        }
+
+        if (this.addCostume(char)) {
+            this.l.chData0.push('_' + char);
+            this.l.chData1.push('');
+            this.l.chData2.push('');
+            this.l.chData3.push('');
+            this.l.chIndex.push(this.l.chData0.length);
+            this.l.chWidth.push(0);
+            this.l.chKern.push('');
+        }
 
     }
 
@@ -426,7 +450,7 @@ function inject(sb3) {
     function injectData(project) {
 
         project = JSON.parse(project);
-        sprite = new Sprite(project, spriteName);
+        sprite = new FontEngine(project, spriteName);
 
         const listNames = [
             'chIndex',
@@ -441,14 +465,10 @@ function inject(sb3) {
             'fontIndex',
             'fontData'
         ];
-        const lists = {};
 
         for (let listName of listNames) {
-            lists[listName] = sprite.getList(listName);
+            sprite.getList(listName);
         }
-        
-        // charWidths[0] = 0;
-        // charWidths[1] = 0;
         
         fontName = document.getElementById("fontName").value;
         let index = fontNames.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
