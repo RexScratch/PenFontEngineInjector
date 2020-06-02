@@ -861,21 +861,39 @@ class FontEngine {
 
         const progressElem = document.getElementById('progress');
 
+        let chars = {};
+        for (let char of charset) {
+            if (font.charToGlyph(char).unicode != null) {
+                chars[char] = this.costumeIndex[char + '_'] - 1;
+            }
+        }
+
         for (let i = 0; i < charset.length; i++) {
             let char = charset.charAt(i);
             let glyph = font.charToGlyph(char);
-            let kerning = '';
-            for (let char2 of charset) {
-                let kerningValue = +font.getKerningValue(font.charToGlyph(char2), glyph);
-                kerningValue = 1000 * (kerningValue / font.unitsPerEm * fontSize);
-                if (Number.isNaN(kerningValue)) {
-                    kerningValue = 0;
-                }
 
-                kerning += formatNumFixedLength(kerningValue);
+            let kerning = [];
+            for (let char2 in chars) {
+                if (chars.hasOwnProperty(char2)) {
+
+                    let kerningValue = +font.getKerningValue(font.charToGlyph(char2), glyph);
+                    kerningValue = 1000 * round(kerningValue / font.unitsPerEm * fontSize);
+                    if (!Number.isNaN(kerningValue) && kerningValue !== 0) {
+                        kerning[chars[char2]] = kerningValue;
+                    }
+
+                } 
             }
 
-            this.currentFont[8 * i + 2] = kerning;
+            let kerningText = '';
+            for (let kerningValue of kerning) {
+                if (kerningValue == null) {
+                    kerningValue = 0;
+                }
+                kerningText += formatNumFixedLength(kerningValue);
+            }
+
+            this.currentFont[8 * i + 4] = kerningText;
             progressElem.innerText = `(${i}/${charset.length}) (1/2)`;
         }
 
