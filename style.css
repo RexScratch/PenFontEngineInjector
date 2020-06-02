@@ -1,6 +1,23 @@
 html, body, input, button {
     font-family: "Source Sans Pro", sans-serif;
     font-size: 1.1rem;
+
+    cursor: default;
+    
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input {
+    cursor: auto;
+}
+
+input[type="file"], button {
+    cursor: pointer;
 }
 
 #main {
