@@ -883,6 +883,8 @@ class FontEngine {
 
     updateFontLists(font, fontName) {
 
+        this.currentFont[1] = Math.round((this.currentFont.length - 2) / 8);
+
         let index = sprite.l.fontName.map((value) => value.toLowerCase()).indexOf(fontName.toLowerCase());
         
         let names = font.names;
@@ -996,6 +998,8 @@ function inject(sb3) {
         }
         
         fontName = document.getElementById("fontName").value;
+        sprite.currentFont.push(`${fontName}_${(new Date()).getTime()}`);
+        sprite.currentFont.push(0);
 
         let charset = document.getElementById("charset").value;
         if (charset.indexOf(" ") === -1) {
