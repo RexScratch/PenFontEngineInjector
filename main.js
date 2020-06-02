@@ -1102,6 +1102,8 @@ function inject(sb3) {
                 progressElem.innerText = `(0/${charset.length}) (1/${progressSteps})`;
                 sprite.addKerning(charset, font, fontSize);
                 progressElem.innerText = `(${charset.length}/${charset.length}) (2/${progressSteps})`;
+            } else {
+                progressElem.innerText = `(${charset.length}/${charset.length}) (1/${progressSteps})`;
             }
 
             sprite.updateFontLists(font, fontName);
