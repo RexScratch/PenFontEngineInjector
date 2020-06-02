@@ -116,6 +116,10 @@ p {
     margin-top: 0.2rem;
 }
 
+ul {
+    margin-bottom: 0.6rem;
+}
+
 div.option {
     padding-top: 0.8rem;
     padding-bottom: 0.8rem;
@@ -123,6 +127,7 @@ div.option {
 
 div.section {
     padding: 0.5rem;
+    padding-top: 0.3rem;
     border-width: 1px;
     border-radius: 0.5rem;
     border-color: #aaa;
