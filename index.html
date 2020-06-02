@@ -56,9 +56,15 @@
                 <p>Note: The project must contain a Pen Font Engine sprite. Using a new project won&apos;t work.</p>
             </div>
 
-            <div class="option" style="padding-bottom:0.3rem">
+            <div class="option">
                 <h6>Name of Pen Font Engine Sprite in Project</h6>
                 <input type="text" value="Font Engine" id="spriteName">
+            </div>
+
+            <div class="option" style="padding-bottom:0">
+                <h6>Other</h6>
+                <input type="checkbox" id="resetData" name="reset">
+                <label for="resetData">Reset font data (ignores Font Settings)</label>
             </div>
 
         </div>
@@ -72,8 +78,9 @@
             <button type="submit" class="big" onclick="openSb3()">Inject and Download</button><span id="progress"></span>
 
             <p>The resulting SB3 file should automatically download after clicking the button above.</p>
+            <p>The original file will not be replaced or deleted. A new file will be created instead.</p>
             <p>The process should take fewer than 5 seconds to complete before the file starts downloading.</p>
-            <p>If the resulting file size is too large, try saving the project in Scratch Desktop.</p>
+            <p>If the resulting file size is too large to upload, try saving the project in Scratch Desktop.</p>
 
         </div>
 

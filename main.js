@@ -1,6 +1,7 @@
 font = {};
 fileName = "project.sb3";
 fontSize = 1;
+progressSteps = 2;
 
 function alertError(message) {
     alert('Error: ' + message);
@@ -764,11 +765,20 @@ class FontEngine {
     }
 
     addNewChar() {
-        this.l.chData0.push('__');
-        this.l.chData1.push('none');
-        this.l.chData2.push('');
-        this.l.chData3.push('');
-        this.l.chData4.push('');
+
+        let last = this.l.chData0.length - 1
+        if (this.l.chData0[last] === '__') {
+            this.l.chData1[last] = 'none';
+            this.l.chData2[last] = '';
+            this.l.chData3[last] = '';
+            this.l.chData4[last] = '';
+        } else {
+            this.l.chData0.push('__');
+            this.l.chData1.push('none');
+            this.l.chData2.push('');
+            this.l.chData3.push('');
+            this.l.chData4.push('');
+        }
         let index = this.l.chIndex.length;
         this.l.chIndex.push(this.l.chData0.length);
         this.l.chWidth.push(0);
@@ -781,6 +791,13 @@ class FontEngine {
             this.l.chData3.push('');
             this.l.chData4.push('');
         }
+
+        this.l.chData0.push('__');
+        this.l.chData1.push('none');
+        this.l.chData2.push('');
+        this.l.chData3.push('');
+        this.l.chData4.push('');
+
         return index;
     }
 
@@ -894,7 +911,7 @@ class FontEngine {
             }
 
             this.currentFont[8 * i + 4] = kerningText;
-            progressElem.innerText = `(${i}/${charset.length}) (1/2)`;
+            progressElem.innerText = `(${i}/${charset.length}) (1/${progressSteps})`;
         }
 
     }
@@ -987,6 +1004,10 @@ function openSb3() {
     reader.readAsArrayBuffer(target.files[0]);
 }
 
+function clearArray(arr) { // Removes every item from an array
+    arr.splice(0, arr.length);
+}
+
 function inject(sb3) {
     spriteName = document.getElementById("spriteName").value;
     sb3.file("project.json").async("string").then(injectData);
@@ -1024,26 +1045,67 @@ function inject(sb3) {
             charset = " " + charset;
         }
 
-        if (sprite.l.chIndex.length === 0) {
-            sprite.addNewChar();
-        }
-
         const progressElem = document.getElementById('progress');
-        
-        progressElem.innerText = `(0/${charset.length}) (0/2)`;
-        for (let i = 0; i < charset.length; i++) {
-            sprite.addChar(charset.charAt(i), font, fontSize);
-            progressElem.innerText = `(${i+1}/${charset.length}) (0/2)`;
+
+        if (document.getElementById("resetData").checked) {
+
+            if (!confirm('Do you want to reset font data? This will not delete the original file.')) {
+                return;
+            }
+
+            progressElem.innerText = '(0/1)';
+
+            let listsToClear = [
+                sprite.l.chIndex,
+                sprite.l.chWidth,
+                sprite.l.chKern,
+                sprite.l.chData0,
+                sprite.l.chData1,
+                sprite.l.chData2,
+                sprite.l.chData3,
+                sprite.l.chData4,
+                sprite.l.fontName,
+                sprite.l.fontLicense,
+                sprite.l.fontIndex,
+                sprite.l.fontData
+            ];
+
+            for (list of listsToClear) {
+                clearArray(list);
+            }
+
+            sprite.costumes.splice(2, sprite.costumes.length - 2);
+            sprite.addNewChar();
+
+            progressElem.innerText = '(1/1)';
+
+        } else {
+
+            let useKerning = document.getElementById('useKerning').checked;
+            if (useKerning) {
+                progressSteps = 2;
+            } else {
+                progressSteps = 1;
+            }
+
+            if (sprite.l.chIndex.length === 0) {
+                sprite.addNewChar();
+            }
+            
+            progressElem.innerText = `(0/${charset.length}) (0/${progressSteps})`;
+            for (let i = 0; i < charset.length; i++) {
+                sprite.addChar(charset.charAt(i), font, fontSize);
+                progressElem.innerText = `(${i+1}/${charset.length}) (0/${progressSteps})`;
+            }
+
+            if (useKerning) {
+                progressElem.innerText = `(0/${charset.length}) (1/${progressSteps})`;
+                sprite.addKerning(charset, font, fontSize);
+                progressElem.innerText = `(${charset.length}/${charset.length}) (2/${progressSteps})`;
+            }
+
+            sprite.updateFontLists(font, fontName);
         }
-
-        progressElem.innerText = `(0/${charset.length}) (1/2)`;
-
-        if (document.getElementById('useKerning').checked){
-            sprite.addKerning(charset, font, fontSize);
-        }
-        progressElem.innerText = `(${charset.length}/${charset.length}) (2/2)`;
-
-        sprite.updateFontLists(font, fontName);
 
         sb3.file("project.json", JSON.stringify(project));
         sb3.generateAsync({type:"base64"}).then(download);
