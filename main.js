@@ -859,6 +859,26 @@ class FontEngine {
 
     addKerning(charset, font, fontSize) {
 
+        const progressElem = document.getElementById('progress');
+
+        for (let i = 0; i < charset.length; i++) {
+            let char = charset.charAt(i);
+            let glyph = font.charToGlyph(char);
+            let kerning = '';
+            for (let char2 of charset) {
+                let kerningValue = +font.getKerningValue(font.charToGlyph(char2), glyph);
+                kerningValue = 1000 * (kerningValue / font.unitsPerEm * fontSize);
+                if (Number.isNaN(kerningValue)) {
+                    kerningValue = 0;
+                }
+
+                kerning += formatNumFixedLength(kerningValue);
+            }
+
+            this.currentFont[8 * i + 2] = kerning;
+            progressElem.innerText = `(${i}/${charset.length}) (1/2)`;
+        }
+
     }
 
     updateFontLists(font, fontName) {
@@ -988,13 +1008,17 @@ function inject(sb3) {
 
         const progressElem = document.getElementById('progress');
         
-        progressElem.innerText = `(0/${charset.length})`;
+        progressElem.innerText = `(0/${charset.length}) (0/2)`;
         for (let i = 0; i < charset.length; i++) {
             sprite.addChar(charset.charAt(i), font, fontSize);
-            progressElem.innerText = `(${i+1}/${charset.length})`;
+            progressElem.innerText = `(${i+1}/${charset.length}) (0/2)`;
         }
 
+        progressElem.innerText = `(0/${charset.length}) (1/2)`;
+
         sprite.addKerning(charset, font, fontSize);
+        progressElem.innerText = `(${charset.length}/${charset.length}) (2/2)`;
+
         sprite.updateFontLists(font, fontName);
 
         sb3.file("project.json", JSON.stringify(project));
@@ -1012,23 +1036,4 @@ function download(data) {
     document.body.appendChild(link);
     link.click();
     alert("The project has been downloaded");
-}
-
-function testKerning() {
-    const charset = document.getElementById("charset").value;
-    let kerningPairs = 0;
-
-    for (let i = 0; i < charset.length; i++) {
-        for (let j = 0; j < charset.length; j++) {
-            let value = font.getKerningValue(font.charToGlyph(charset.charAt(i)), font.charToGlyph(charset.charAt(j)));
-
-            if (value !== 0) {
-                value = value / font.unitsPerEm * fontSize;
-                console.log(`${charset.charAt(i)}${charset.charAt(j)}: ${value}`);
-                kerningPairs++;
-            }
-        }
-    }
-
-    return kerningPairs;
 }
