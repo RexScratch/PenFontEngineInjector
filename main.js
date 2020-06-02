@@ -94,6 +94,9 @@ class Line {
         this.ymin = Math.min(y0, y1);
         this.ymax = Math.max(y0, y1);
         this.slope = (y1 - y0) / (x1 - x0);
+
+        this.isLine = true;
+        this.isCurve = false;
     }
 
     static createLines(x0, y0, x1, y1) {
@@ -133,7 +136,48 @@ class Line {
         }
 
         return this.slope * (x - this.x0) + this.y0;
-        
+    }
+
+    compare(other) {
+
+        if (this.xmax <= other.xmin || other.xmax <= this.xmin) {
+            return 0;
+        }
+
+        const xCoords = [
+            this.xmin,
+            this.xmax,
+            (this.xmin + this.xmax) / 2,
+            other.xmin,
+            other.xmax,
+            (other.xmin + other.xmax) / 2
+        ]
+
+        for (let x of xCoords) {
+            let thisY = this.yOfX(x);
+            let otherY = other.yOfX(x);
+
+            if (!Number.isNaN(thisY) && !Number.isNaN(otherY)) {
+                let result = round(thisY - otherY);
+                if (result !== 0) {
+                    return result;
+                }
+            }
+        }
+
+        return 0;
+
+    }
+
+    toString() {
+
+        let str = 'L;';
+        str += formatNum(this.x0) + ';';
+        str += formatNum(this.x1) + ';';
+        str += formatNum(this.y0) + ';';
+        str += formatNum(this.slope) + ';';
+
+        return str;
     }
 
 }
@@ -162,7 +206,7 @@ class Curve {
         this.y1 = y2;
 
         this.controlX = x1;
-        this.controlY = x2;
+        this.controlY = y1;
 
         this.ax = x2 - 2 * x1 + x0;
         this.bx = 2 * (x1 - x0);
@@ -181,7 +225,9 @@ class Curve {
 
         this.ymin = Math.min(y0, y2, extremeY);
         this.ymax = Math.max(y0, y2, extremeY);
-        
+
+        this.isLine = false;
+        this.isCurve = true;
     }
 
     static createCurves(x0, y0, x1, y1, x2, y2, x3, y3) {
@@ -328,6 +374,76 @@ class Curve {
 
     }
 
+    compare(other) {
+
+        if (this.xmax <= other.xmin || other.xmax <= this.xmin) {
+            return 0;
+        }
+
+        const xCoords = [
+            this.xmin,
+            this.xmax,
+            (this.xmin + this.xmax) / 2,
+            other.xmin,
+            other.xmax,
+            (other.xmin + other.xmax) / 2
+        ]
+
+        for (let x of xCoords) {
+            let thisY = this.yOfX(x);
+            let otherY = other.yOfX(x);
+
+            if (!Number.isNaN(thisY) && !Number.isNaN(otherY)) {
+                let result = round(thisY - otherY);
+                if (result !== 0) {
+                    return result;
+                }
+            }
+        }
+
+        return 0;
+
+    }
+
+    toString() {
+
+        let str = 'Q;';
+        str += formatNum(this.x0) + ';';
+        str += formatNum(this.x1) + ';';
+
+        const linearX = (this.ax === 0);
+
+        if (this.ax > 0) {
+
+            str += 'p;';
+            str += formatNum(-1 * this.bx / this.ax) + ';';
+            str += formatNum(4 / this.ax) + ';';
+            str += formatNum(this.cx) + ';';
+
+        } else if (this.ax < 0) {
+
+            str += 'm;';
+            str += formatNum(-1 * this.bx / this.ax) + ';';
+            str += formatNum(-4 / this.ax) + ';';
+            str += formatNum(this.cx) + ';';
+
+        } else {
+
+            str += 'z;';
+            str += '0;';
+            str += formatNum(this.bx) + ';';
+            str += formatNum(this.cx) + ';';
+
+        }
+
+        str += formatNum(this.ay) + ';';
+        str += formatNum(this.by) + ';';
+        str += formatNum(this.cy) + ';';
+
+        return str;
+
+    }
+
 }
 
 class FontEngine {
@@ -397,6 +513,76 @@ class FontEngine {
 
     }
 
+    sortSegments(arr) {
+
+        if (arr.length < 2) {
+            return arr.concat([]);
+        }
+
+        if (arr.length === 2) {
+            if (arr[0].compare(arr[1]) > 0) {
+                return [arr[1], arr[0]];
+            }
+            return [arr[0], arr[1]];
+        }
+
+        arr = arr.concat([]);
+
+        const pivotIndex = arr.length - 1;
+        const pivot = arr[pivotIndex];
+
+        arr.splice(pivotIndex, 1);
+
+        let low = [];
+        let high = [];
+
+        let newArr = [];
+        for (let segment of arr) {
+            let diff = segment.compare(pivot);
+            if (diff > 0) {
+                high.push(segment);
+            } else if (diff < 0) {
+                low.push(segment);
+            } else {
+                newArr.push(segment);
+            }
+        }
+
+        arr = newArr;
+
+        let anyHigher = true;
+        while (anyHigher) {
+
+            anyHigher = false;
+            newArr = [];
+
+            for (let seg1 of arr) {
+
+                let higher = false;
+
+                for (let seg2 of high) {
+                    if (seg1.compare(seg2) > 0) {
+                        high.push(seg1);
+                        higher = true;
+                        anyHigher = true;
+                        break;
+                    }
+                }
+
+                if (!higher) {
+                    newArr.push(seg1);
+                }
+            }
+
+            arr = newArr;
+        }
+
+        low = low.concat(arr);
+
+        return this.sortSegments(low).concat([pivot]).concat(this.sortSegments(high));
+        
+    }
+
     addNewChar() {
         this.l.chData0.push('__');
         this.l.chData1.push('none');
@@ -444,7 +630,50 @@ class FontEngine {
         this.currentFont.push(bounds.x2);
         this.currentFont.push(bounds.y1);
         this.currentFont.push(bounds.y2);
-        this.currentFont.push('');
+
+        const commands = path.commands;
+        let segments = [];
+        let beginX = 0;
+        let beginY = 0;
+        let x = beginX;
+        let y = beginY;
+
+        for (let command of commands) {
+            if (command.type === 'M') {
+                beginX = command.x;
+                beginY = command.y;
+                x = beginX;
+                y = beginY;
+            } else if (command.type === 'L') {
+                segments = segments.concat(Line.createLines(x, y, command.x, command.y));
+                x = command.x;
+                y = command.y;
+            } else if (command.type === 'Q') {
+                segments = segments.concat(Curve.createCurves(x, y, command.x1, command.y1, command.x, command.y));
+                x = command.x;
+                y = command.y;  
+            } else if (command.type === 'C') {
+                segments = segments.concat(Curve.createCurves(x, y, command.x1, command.y1, command.x2, command.y2, command.x, command.y));
+                x = command.x;
+                y = command.y;
+            } else if (command.type === 'Z') {
+                segments = segments.concat(Line.createLines(x, y, beginX, beginY));
+                x = beginX;
+                y = beginY;
+            } else {
+                alertError('Font is not compatible');
+            }
+        }
+
+        segments = this.sortSegments(segments);
+
+        let definition = '';
+        definition += formatNum(segments.length) + ';;;;;';
+        for (let segment of segments) {
+            definition += segment.toString();
+        }
+
+        this.currentFont.push(definition);
 
     }
 
@@ -577,8 +806,12 @@ function inject(sb3) {
             sprite.addNewChar();
         }
 
-        for (let char of charset) {
-            sprite.addChar(char, font, fontSize);
+        const progressElem = document.getElementById('progress');
+        
+        progressElem.innerText = `(0/${charset.length})`;
+        for (let i = 0; i < charset.length; i++) {
+            sprite.addChar(charset.charAt(i), font, fontSize);
+            progressElem.innerText = `(${i+1}/${charset.length})`;
         }
 
         sprite.addKerning(charset, font, fontSize);
