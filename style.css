@@ -16,7 +16,7 @@ input {
     cursor: auto;
 }
 
-input[type="file"], button {
+input[type="file"], input[type="checkbox"], button {
     cursor: pointer;
 }
 
