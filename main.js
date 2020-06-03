@@ -823,10 +823,10 @@ class FontEngine {
         let path = glyph.getPath(0, 0, fontSize);
         let bounds = path.getBoundingBox();
 
-        this.currentFont.push(bounds.x1);
-        this.currentFont.push(bounds.x2);
-        this.currentFont.push(bounds.y1);
-        this.currentFont.push(bounds.y2);
+        this.currentFont.push(round(bounds.x1));
+        this.currentFont.push(round(bounds.x2));
+        this.currentFont.push(round(bounds.y1));
+        this.currentFont.push(round(bounds.y2));
 
         const commands = path.commands;
         let segments = [];
