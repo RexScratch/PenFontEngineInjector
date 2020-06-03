@@ -1047,9 +1047,9 @@ function inject(sb3) {
 
         const progressElem = document.getElementById('progress');
 
-        if (document.getElementById("resetData").checked) {
+        if (document.getElementById("clearData").checked) {
 
-            if (!confirm('Do you want to reset font data? This will not delete the original file.')) {
+            if (!confirm('Do you want to clear font data? This will not delete the original file.')) {
                 return;
             }
 
