@@ -286,9 +286,9 @@ class Line {
         // This is used instead of a constructor because vertical lines should be ignored
 
         x0 = round(x0);
-        y0 = round(y0);
+        y0 = round(-1 * y0);
         x1 = round(x1);
-        y1 = round(y1);
+        y1 = round(-1 * y1);
 
         if (x0 === x1) {
             return [];
@@ -418,11 +418,11 @@ class Curve {
         // Quadratic curves may also be split if they cannot be expressed as a function of x
 
         x0 = round(x0);
-        y0 = round(y0);
+        y0 = round(-1 * y0);
         x1 = round(x1);
-        y1 = round(y1);
+        y1 = round(-1 * y1);
         x2 = round(x2);
-        y2 = round(y2);
+        y2 = round(-1 * y2);
 
         if (x3 == null && y3 == null) {
 
@@ -825,8 +825,8 @@ class FontEngine {
 
         this.currentFont.push(round(bounds.x1));
         this.currentFont.push(round(bounds.x2));
-        this.currentFont.push(round(bounds.y1));
-        this.currentFont.push(round(bounds.y2));
+        this.currentFont.push(round(-1 * bounds.y1));
+        this.currentFont.push(round(-1 * bounds.y2));
 
         const commands = path.commands;
         let segments = [];
