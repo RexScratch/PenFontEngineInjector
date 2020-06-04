@@ -592,8 +592,6 @@ class Curve {
         str += formatNum(this.x0) + ';';
         str += formatNum(this.x1) + ';';
 
-        const linearX = (this.ax === 0);
-
         if (this.ax > 0) {
 
             str += 'p;';
