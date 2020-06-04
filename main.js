@@ -355,7 +355,7 @@ class Line {
         let str = 'L;';
         str += formatNum(this.x0) + ';';
         str += formatNum(this.x1) + ';';
-        str += formatNum(4 * this.y0) + ';';
+        str += formatNum(4 * (this.y0 - 0.3)) + ';';
         str += formatNum(4 * this.slope) + ';';
 
         return str;
@@ -619,7 +619,7 @@ class Curve {
 
         str += formatNum(4 * this.ay) + ';';
         str += formatNum(4 * this.by) + ';';
-        str += formatNum(4 * this.cy) + ';';
+        str += formatNum(4 * (this.cy - 0.3)) + ';';
 
         return str;
 
