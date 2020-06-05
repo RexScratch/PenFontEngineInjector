@@ -862,8 +862,8 @@ class FontEngine {
 
         this.currentFont.push(round(bounds.x1));
         this.currentFont.push(round(bounds.x2));
-        this.currentFont.push(round(-1 * bounds.y1));
         this.currentFont.push(round(-1 * bounds.y2));
+        this.currentFont.push(round(-1 * bounds.y1));
 
         const commands = path.commands;
         let segments = [];
