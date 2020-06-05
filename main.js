@@ -428,7 +428,7 @@ class Curve {
 
             // The curve is quadratic
 
-            if (x0 === x1 && x1 === 2) {
+            if (x0 === x1 && x1 === x2) {
                 return [];
             }
 
@@ -438,7 +438,7 @@ class Curve {
             }
 
             if (x0 <= x1 && x1 <= x2) {
-                return [new Curve(x0, y0, x1, y2, x2, y2)];
+                return [new Curve(x0, y0, x1, y1, x2, y2)];
             }
 
             // The curve cannot be expressed as a function of x
@@ -592,32 +592,33 @@ class Curve {
         str += formatNum(this.x0) + ';';
         str += formatNum(this.x1) + ';';
 
-        if (this.ax > 0) {
-
-            str += 'p;';
-            str += formatNum(-1 * this.bx / this.ax) + ';';
-            str += formatNum(4 / this.ax) + ';';
-            str += formatNum(this.cx) + ';';
-
-        } else if (this.ax < 0) {
-
-            str += 'm;';
-            str += formatNum(-1 * this.bx / this.ax) + ';';
-            str += formatNum(-4 / this.ax) + ';';
-            str += formatNum(this.cx) + ';';
-
-        } else {
+        if (this.ax === 0) {
 
             str += 'z;';
             str += '0;';
             str += formatNum(this.bx) + ';';
             str += formatNum(this.cx) + ';';
 
-        }
+            str += formatNum(4 * this.ay) + ';';
+            str += formatNum(4 * this.by) + ';';
+            str += formatNum(4 * (this.cy - 0.3)) + ';';
 
-        str += formatNum(4 * this.ay) + ';';
-        str += formatNum(4 * this.by) + ';';
-        str += formatNum(4 * (this.cy - 0.3)) + ';';
+        } else {
+
+            if (this.ax > 0) {
+                str += 'p;';
+            } else {
+                str += 'm;';
+            }
+            str += formatNum(-1 * this.bx / this.ax) + ';';
+            str += formatNum(4 / this.ax) + ';';
+            str += formatNum(this.cx) + ';';
+
+            str += formatNum(4 * this.ay / 4) + ';';
+            str += formatNum(4 * this.by / 2) + ';';
+            str += formatNum(4 * (this.cy - 0.3)) + ';';
+
+        }
 
         return str;
 
