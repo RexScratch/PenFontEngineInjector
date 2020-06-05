@@ -303,72 +303,6 @@ class Line {
         
     }
 
-    yOfX(x) {
-        if (x < this.xmin || x > this.xmax) {
-            return NaN;
-        }
-
-        if (x === this.x0) {
-            return this.y0;
-        }
-
-        if (x === this.x1) {
-            return this.y1;
-        }
-
-        return this.slope * (x - this.x0) + this.y0;
-    }
-
-    compare(other) {
-
-        if (this.xmax <= other.xmin || other.xmax <= this.xmin) {
-            return 0;
-        }
-
-        const xCoords = [
-            this.xmin,
-            this.xmax,
-            (this.xmin + this.xmax) / 2,
-            other.xmin,
-            other.xmax,
-            (other.xmin + other.xmax) / 2,
-            (this.xmax + other.xmin) / 2,
-            (this.xmin + other.xmax) / 2
-        ];
-
-        for (let x of xCoords) {
-            let thisY = this.yOfX(x);
-            let otherY = other.yOfX(x);
-
-            if (!Number.isNaN(thisY) && !Number.isNaN(otherY)) {
-                let result = round(thisY - otherY);
-                if (result !== 0) {
-                    return result;
-                }
-            }
-        }
-        
-        // Probably won't ever run
-
-        let left = Math.min(this.xmin, other.xmin);
-        let right = Math.max(this.xmax, other.xmax);
-        let increment = (right - left) / 100;
-        for (let x = left; x < right; x += increment) {
-            let thisY = this.yOfX(x);
-            let otherY = other.yOfX(x);
-
-            if (!Number.isNaN(thisY) && !Number.isNaN(otherY)) {
-                let result = round(thisY - otherY);
-                if (result !== 0) {
-                    return result;
-                }
-            }
-        }
-
-        return 0;
-
-    }
-
     toString() {
 
         let str = 'L;';
@@ -540,88 +474,8 @@ class Curve {
 
     }
 
-    xOfT(t) {
-        return this.ax * (t ** 2) + this.bx * t + this.cx;
-    }
-
     yOfT(t) {
         return this.ay * (t ** 2) + this.by * t + this.cy;
-    }
-
-    yOfX(x) {
-
-        if (x < this.xmin || x > this.xmax) {
-            return NaN;
-        }
-
-        if (x === this.x0) {
-            return this.y0;
-        }
-
-        if (x === this.x1) {
-            return this.y1;
-        }
-
-        let t = NaN;
-
-        if (this.ax === 0) {
-            t = (x - this.cx) / this.bx;
-        } else {
-            t = (-1 * this.bx + Math.sqrt(this.bx ** 2 - 4 * this.ax * (this.cx - x))) / (2 * this.ax);
-        }
-
-        return this.yOfT(t);
-
-    }
-
-    compare(other) {
-
-        if (this.xmax <= other.xmin || other.xmax <= this.xmin) {
-            return 0;
-        }
-
-        const xCoords = [
-            this.xmin,
-            this.xmax,
-            (this.xmin + this.xmax) / 2,
-            other.xmin,
-            other.xmax,
-            (other.xmin + other.xmax) / 2,
-            (this.xmax + other.xmin) / 2,
-            (this.xmin + other.xmax) / 2
-        ];
-
-        for (let x of xCoords) {
-            let thisY = this.yOfX(x);
-            let otherY = other.yOfX(x);
-
-            if (!Number.isNaN(thisY) && !Number.isNaN(otherY)) {
-                let result = round(thisY - otherY);
-                if (result !== 0) {
-                    return result;
-                }
-            }
-        }
-        
-        // Probably won't ever run
-
-        let left = Math.min(this.xmin, other.xmin);
-        let right = Math.max(this.xmax, other.xmax);
-        let increment = (right - left) / 100;
-        for (let x = left; x < right; x += increment) {
-            let thisY = this.yOfX(x);
-            let otherY = other.yOfX(x);
-
-            if (!Number.isNaN(thisY) && !Number.isNaN(otherY)) {
-                let result = round(thisY - otherY);
-                if (result !== 0) {
-                    return result;
-                }
-            }
-        }
-
-        return 0;
-
     }
 
     toString() {
@@ -731,76 +585,6 @@ class FontEngine {
 
     }
 
-    sortSegments(arr) {
-
-        if (arr.length < 2) {
-            return arr.concat([]);
-        }
-
-        if (arr.length === 2) {
-            if (arr[0].compare(arr[1]) > 0) {
-                return [arr[1], arr[0]];
-            }
-            return [arr[0], arr[1]];
-        }
-
-        arr = arr.concat([]);
-
-        const pivotIndex = arr.length - 1;
-        const pivot = arr[pivotIndex];
-
-        arr.splice(pivotIndex, 1);
-
-        let low = [];
-        let high = [];
-
-        let newArr = [];
-        for (let segment of arr) {
-            let diff = segment.compare(pivot);
-            if (diff > 0) {
-                high.push(segment);
-            } else if (diff < 0) {
-                low.push(segment);
-            } else {
-                newArr.push(segment);
-            }
-        }
-
-        arr = newArr;
-
-        let anyHigher = (arr.length > 0);
-        while (anyHigher) {
-
-            anyHigher = false;
-            newArr = [];
-
-            for (let seg1 of arr) {
-
-                let higher = false;
-
-                for (let seg2 of high) {
-                    if (seg1.compare(seg2) > 0) {
-                        high.push(seg1);
-                        higher = true;
-                        anyHigher = true;
-                        break;
-                    }
-                }
-
-                if (!higher) {
-                    newArr.push(seg1);
-                }
-            }
-
-            arr = newArr;
-        }
-
-        low = low.concat(arr);
-
-        return this.sortSegments(low).concat([pivot]).concat(this.sortSegments(high));
-        
-    }
-
     addNewChar() {
 
         let last = this.l.chData0.length - 1
@@ -898,8 +682,6 @@ class FontEngine {
                 alertError('Font is not compatible');
             }
         }
-
-        segments = this.sortSegments(segments);
 
         let definition = '';
         definition += formatNum(segments.length) + ';;;;;';
