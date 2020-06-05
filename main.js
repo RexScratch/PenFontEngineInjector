@@ -331,10 +331,29 @@ class Line {
             (this.xmin + this.xmax) / 2,
             other.xmin,
             other.xmax,
-            (other.xmin + other.xmax) / 2
-        ]
+            (other.xmin + other.xmax) / 2,
+            (this.xmax + other.xmin) / 2,
+            (this.xmin + other.xmax) / 2
+        ];
 
         for (let x of xCoords) {
+            let thisY = this.yOfX(x);
+            let otherY = other.yOfX(x);
+
+            if (!Number.isNaN(thisY) && !Number.isNaN(otherY)) {
+                let result = round(thisY - otherY);
+                if (result !== 0) {
+                    return result;
+                }
+            }
+        }
+        
+        // Probably won't ever run
+
+        let left = Math.min(this.xmin, other.xmin);
+        let right = Math.max(this.xmax, other.xmax);
+        let increment = (right - left) / 100;
+        for (let x = left; x < right; x += increment) {
             let thisY = this.yOfX(x);
             let otherY = other.yOfX(x);
 
@@ -398,7 +417,7 @@ class Curve {
         this.cy = y0;
 
         this.xmin = x0;
-        this.xmax = x1;
+        this.xmax = x2;
 
         // Solve for t when dy/dt = 0  
         const extremeT = (-1 * this.by) / (2 * this.ay);
@@ -567,10 +586,29 @@ class Curve {
             (this.xmin + this.xmax) / 2,
             other.xmin,
             other.xmax,
-            (other.xmin + other.xmax) / 2
-        ]
+            (other.xmin + other.xmax) / 2,
+            (this.xmax + other.xmin) / 2,
+            (this.xmin + other.xmax) / 2
+        ];
 
         for (let x of xCoords) {
+            let thisY = this.yOfX(x);
+            let otherY = other.yOfX(x);
+
+            if (!Number.isNaN(thisY) && !Number.isNaN(otherY)) {
+                let result = round(thisY - otherY);
+                if (result !== 0) {
+                    return result;
+                }
+            }
+        }
+        
+        // Probably won't ever run
+
+        let left = Math.min(this.xmin, other.xmin);
+        let right = Math.max(this.xmax, other.xmax);
+        let increment = (right - left) / 100;
+        for (let x = left; x < right; x += increment) {
             let thisY = this.yOfX(x);
             let otherY = other.yOfX(x);
 
@@ -730,7 +768,7 @@ class FontEngine {
 
         arr = newArr;
 
-        let anyHigher = true;
+        let anyHigher = (arr.length > 0);
         while (anyHigher) {
 
             anyHigher = false;
