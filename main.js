@@ -261,7 +261,9 @@ class Line {
         x1 = round(x1);
         y1 = round(y1);
 
+        this.direction = 1;
         if (x1 < x0) {
+            this.direction *= -1;
             [x0, x1] = [x1, x0];
             [y0, y1] = [y1, y0];
         }
@@ -294,18 +296,22 @@ class Line {
             return [];
         }
 
-        if (x1 < x0) {
-            [x0, x1] = [x1, x0];
-            [y0, y1] = [y1, y0];
-        }
-
         return [new Line(x0, y0, x1, y1)];
         
     }
 
     toString() {
 
-        let str = 'L;';
+        let str = 'L';
+
+        let direction = Math.sign(this.direction);
+        if (direction === 1) {
+            str += '+';
+        } else {
+            str += '-';
+        }
+        str += ';';
+
         str += formatNum(this.x0) + ';';
         str += formatNum(this.x1) + ';';
         str += formatNum(4 * (this.y0 - 0.3)) + ';';
@@ -320,7 +326,7 @@ class Curve {
 
     // Represents a quadratic Bézier curve
 
-    constructor(x0, y0, x1, y1, x2, y2) {
+    constructor(x0, y0, x1, y1, x2, y2, directionMult) {
 
         x0 = round(x0);
         y0 = round(y0);
@@ -329,7 +335,9 @@ class Curve {
         x2 = round(x2);
         y2 = round(y2);
 
+        this.direction = directionMult;
         if (x2 < x0) {
+            this.direction *= -1;
             [x0, x2] = [x2, x0];
             [y0, y2] = [y2, y0];
         }
@@ -385,13 +393,15 @@ class Curve {
                 return [];
             }
 
+            let directionMult = 1;
             if (x2 < x0) {
                 [x0, x2] = [x2, x0];
                 [y0, y2] = [y2, y0];
+                directionMult = -1;
             }
 
             if (x0 <= x1 && x1 <= x2) {
-                return [new Curve(x0, y0, x1, y1, x2, y2)];
+                return [new Curve(x0, y0, x1, y1, x2, y2, directionMult)];
             }
 
             // The curve cannot be expressed as a function of x
@@ -417,7 +427,7 @@ class Curve {
             const midX = lerp(controlX0, controlX1, extremeT);
             const midY = lerp(controlY0, controlY1, extremeT);
 
-            return [new Curve(x0, y0, controlX0, controlY0, midX, midY), new Curve(midX, midY, controlX1, controlY1, x2, y2)];
+            return [new Curve(x0, y0, controlX0, controlY0, midX, midY, directionMult), new Curve(midX, midY, controlX1, controlY1, x2, y2, directionMult)];
 
         }
 
@@ -470,7 +480,7 @@ class Curve {
         const controlX = (0.75 * x1 - 0.25 * x0) + (0.75 * x3 - 0.25 * x2);
         const controlY = (0.75 * y1 - 0.25 * y0) + (0.75 * y3 - 0.25 * y2);
 
-        return new Curve(x0, y0, controlX, controlY, x3, y3);
+        return new Curve(x0, y0, controlX, controlY, x3, y3, 1);
 
     }
 
@@ -480,7 +490,16 @@ class Curve {
 
     toString() {
 
-        let str = 'Q;';
+        let str = 'Q';
+
+        let direction = Math.sign(this.direction);
+        if (direction === 1) {
+            str += '+';
+        } else {
+            str += '-';
+        }
+        str += ';';
+
         str += formatNum(this.x0) + ';';
         str += formatNum(this.x1) + ';';
 
