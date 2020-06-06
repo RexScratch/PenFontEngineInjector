@@ -728,16 +728,21 @@ class FontEngine {
             let glyph = font.charToGlyph(char);
 
             let kerning = [];
-            for (let char2 in chars) {
-                if (chars.hasOwnProperty(char2)) {
+            if (char !== ' ') {
+                for (let char2 in chars) {
+                    if (chars.hasOwnProperty(char2)) {
 
-                    let kerningValue = +font.getKerningValue(font.charToGlyph(char2), glyph);
-                    kerningValue = 1000 * round(kerningValue / font.unitsPerEm * fontSize);
-                    if (!Number.isNaN(kerningValue) && kerningValue !== 0) {
-                        kerning[chars[char2]] = kerningValue;
-                    }
+                        let kerningValue = +font.getKerningValue(font.charToGlyph(char2), glyph);
+                        if (char2 === ' ') {
+                            kerningValue = 0.0;
+                        }
+                        kerningValue = 1000 * round(kerningValue / font.unitsPerEm * fontSize);
+                        if (!Number.isNaN(kerningValue) && kerningValue !== 0) {
+                            kerning[chars[char2]] = kerningValue;
+                        }
 
-                } 
+                    } 
+                }
             }
 
             let kerningText = '';
