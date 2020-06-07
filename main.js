@@ -712,9 +712,14 @@ class FontEngine {
 
     }
 
-    addKerning(charset, font, fontSize) {
+    addKerning(font, fontSize) {
 
         const progressElem = document.getElementById('progress');
+
+        let charset = '';
+        for (let i = 2; i < this.currentFont.length; i += 8) {
+            charset += this.costumes[this.currentFont[i]].name.charAt(0);
+        }
 
         let chars = {};
         for (let char of charset) {
@@ -943,7 +948,7 @@ function inject(sb3) {
 
             if (useKerning) {
                 progressElem.innerText = `(0/${charset.length}) (1/${progressSteps})`;
-                sprite.addKerning(charset, font, fontSize);
+                sprite.addKerning(font, fontSize);
                 progressElem.innerText = `(${charset.length}/${charset.length}) (2/${progressSteps})`;
             } else {
                 progressElem.innerText = `(${charset.length}/${charset.length}) (1/${progressSteps})`;
