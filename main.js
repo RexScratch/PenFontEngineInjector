@@ -434,7 +434,7 @@ class Curve {
         // The curve is cubic
 
         x3 = round(x3);
-        y3 = round(y3);
+        y3 = round(-1 * y3);
 
         if (x0 === x1 && x1 === x2 & x2 === x3) {
             return [];
@@ -477,8 +477,10 @@ class Curve {
 
     static approxCubic(x0, y0, x1, y1, x2, y2, x3, y3) {
 
-        const controlX = (0.75 * x1 - 0.25 * x0) + (0.75 * x3 - 0.25 * x2);
-        const controlY = (0.75 * y1 - 0.25 * y0) + (0.75 * y3 - 0.25 * y2);
+        // Approximates a cubic curve to a quadratic curve
+
+        const controlX = (0.75 * x1 - 0.25 * x0) + (0.75 * x2 - 0.25 * x3);
+        const controlY = (0.75 * y1 - 0.25 * y0) + (0.75 * y2 - 0.25 * y3);
 
         return new Curve(x0, y0, controlX, controlY, x3, y3, 1);
 
