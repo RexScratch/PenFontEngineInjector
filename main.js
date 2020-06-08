@@ -730,6 +730,8 @@ class FontEngine {
             }
         }
 
+        let kerningPairs = [];
+
         for (let i = 0; i < charset.length; i++) {
             let char = charset.charAt(i);
             let glyph = font.charToGlyph(char);
@@ -746,6 +748,7 @@ class FontEngine {
                         kerningValue = 1000 * round(kerningValue / font.unitsPerEm * fontSize);
                         if (!Number.isNaN(kerningValue) && kerningValue !== 0) {
                             kerning[chars[char2]] = kerningValue;
+                            kerningPairs.push([''+char2+char, kerningValue / 1000]);
                         }
 
                     } 
@@ -763,6 +766,9 @@ class FontEngine {
             this.currentFont[8 * i + 4] = kerningText;
             progressElem.innerText = `(${i}/${charset.length}) (1/${progressSteps})`;
         }
+
+        kerningPairs.sort((a, b) => (Math.abs(b[1]) - Math.abs(a[1])));
+        this.kerningPairs = kerningPairs; // So I can find kerning pairs to demonstrate
 
     }
 
