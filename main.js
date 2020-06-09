@@ -359,6 +359,14 @@ class Curve {
         this.by = 2 * (y1 - y0);
         this.cy = y0;
 
+        this.ax = round(this.ax);
+        this.bx = round(this.bx);
+        this.cx = round(this.cx);
+
+        this.ay = round(this.ay);
+        this.by = round(this.by);
+        this.cy = round(this.cy);
+
         this.xmin = x0;
         this.xmax = x2;
 
