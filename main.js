@@ -902,9 +902,9 @@ function inject(sb3) {
             'fontLicense',
             'fontIndex',
             'fontData',
-            '_cacheIdx',
-            '_cache0',
-            '_cache1',
+            'cacheIdx',
+            'cache0',
+            'cache1',
         ];
 
         for (let listName of listNames) {
@@ -943,7 +943,10 @@ function inject(sb3) {
                     sprite.l.fontName,
                     sprite.l.fontLicense,
                     sprite.l.fontIndex,
-                    sprite.l.fontData
+                    sprite.l.fontData,
+                    sprite.l.cacheIdx,
+                    sprite.l.cache0,
+                    sprite.l.cache1
                 ];
 
                 for (list of listsToClear) {
