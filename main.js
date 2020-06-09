@@ -190,7 +190,7 @@ function formatNumFixedLength(n) {
 
 function formatNum(n) {
 
-    const PRECISION = 8;
+    const PRECISION = 10;
 
     n = +n;
     if (Number.isNaN(n)) {
@@ -246,7 +246,7 @@ function formatNum(n) {
 }
 
 function round(n) {
-    return +((+n).toFixed(6));
+    return +((+n).toFixed(5));
 }
 
 function lerp(value0, value1, t) {
@@ -532,8 +532,14 @@ class Curve {
             } else {
                 str += 'm;';
             }
+            /*
             str += formatNum(-1 * this.bx / this.ax) + ';';
             str += formatNum(4 / this.ax) + ';';
+            str += formatNum(this.cx) + ';';
+            */
+
+            str += formatNum(-1 * this.bx) + ';';
+            str += formatNum(this.ax) + ';';
             str += formatNum(this.cx) + ';';
 
             str += formatNum(4 * this.ay / 4) + ';';
