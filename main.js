@@ -314,7 +314,7 @@ class Line {
 
         str += formatNum(this.x0) + ';';
         str += formatNum(this.x1) + ';';
-        str += formatNum(4 * (this.y0 - 0.3)) + ';';
+        str += formatNum(4 * this.y0) + ';';
         str += formatNum(4 * this.slope) + ';';
 
         return str;
@@ -514,7 +514,7 @@ class Curve {
 
             str += formatNum(4 * this.ay) + ';';
             str += formatNum(4 * this.by) + ';';
-            str += formatNum(4 * (this.cy - 0.3)) + ';';
+            str += formatNum(4 * this.cy) + ';';
 
         } else {
 
@@ -529,7 +529,7 @@ class Curve {
 
             str += formatNum(4 * this.ay / 4) + ';';
             str += formatNum(4 * this.by / 2) + ';';
-            str += formatNum(4 * (this.cy - 0.3)) + ';';
+            str += formatNum(4 * this.cy) + ';';
 
         }
 
@@ -813,7 +813,7 @@ class FontEngine {
             let currentLen = 0;
 
             if (index + 1 === this.l.fontName.length) {
-                currentLen = this.l.fontData.length - fontDataIndex;
+                currentLen = this.l.fontData.length + 1 - fontDataIndex;
             } else {
                 currentLen = this.l.fontIndex[index + 1] - fontDataIndex;
 
