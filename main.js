@@ -189,7 +189,8 @@ function formatNumFixedLength(n) {
 }
 
 function formatNum(n) {
-    const PRECISION = 12;
+
+    const PRECISION = 8;
 
     n = +n;
     if (Number.isNaN(n)) {
