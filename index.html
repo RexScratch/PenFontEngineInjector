@@ -33,7 +33,7 @@
             <div class="option">
                 <h6>Character Set to Inject</h6>
                 <input type="text" id="charset" value=" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$¢€£¥%^&amp;*()-–—=≠≈[]\;&apos;‘’,./_+{}|:&quot;“”&lt;≤≥&gt;?`~×÷±°′″">
-                <p>Note: All characters of a pre-existing font will be removed before adding the characters above</p>
+                <p>If the font already exists, its character data will be wiped before injecting the above character set</p>
             </div>
 
             <div class="option" style="padding-bottom:0">
@@ -53,7 +53,7 @@
             <div class="option">    
                 <h6>SB3 Project File with Pen Font Engine++ Sprite</h6>
                 <input type="file" id="sb3File" accept=".sb3">
-                <p>Note: The project must contain a Pen Font Engine++ sprite. Using a new project won&apos;t work.</p>
+                <p>The project must contain a Pen Font Engine++ sprite. Using a new project won&apos;t work.</p>
             </div>
 
             <div class="option">
@@ -63,8 +63,11 @@
 
             <div class="option" style="padding-bottom:0">
                 <h6>Other</h6>
-                <input type="checkbox" id="clearData" name="clear">
-                <label for="clearData">Clear font data (ignores Font Settings)</label>
+                <input type="checkbox" id="clearData" name="clearData">
+                <label for="clearData">Clear font data</label><br>
+                <input type="checkbox" id="clearMonitors" name="clearMonitors">
+                <label for="clearMonitors">Clear list monitors (reduces project size)</label>
+                <p>Enabling any of these options will disable font injection.</p>
             </div>
 
         </div>

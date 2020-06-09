@@ -731,8 +731,6 @@ class FontEngine {
 
     addKerning(font, fontSize) {
 
-        const progressElem = document.getElementById('progress');
-
         let charset = '';
         for (let i = 2; i < this.currentFont.length; i += 8) {
             charset += this.costumes[this.currentFont[i]].name.charAt(0);
@@ -779,7 +777,6 @@ class FontEngine {
             }
 
             this.currentFont[8 * i + 4] = kerningText;
-            progressElem.innerText = `(${i}/${charset.length}) (1/${progressSteps})`;
         }
 
         kerningPairs.sort((a, b) => (Math.abs(b[1]) - Math.abs(a[1])));
@@ -884,11 +881,15 @@ function inject(sb3) {
     sb3.file("project.json").async("string").then(injectData);
 
     function injectData(project) {
+        
+        const progressElem = document.getElementById("progress");
 
+        progressElem.innerText = 'Parsing file...';
         project = JSON.parse(project);
+        progressElem.innerText = 'Working...';
         sprite = new FontEngine(project, spriteName);
 
-        const listNames = [
+        let listNames = [
             'chIndex',
             'chWidth',
             'chKern',
@@ -900,7 +901,10 @@ function inject(sb3) {
             'fontName',
             'fontLicense',
             'fontIndex',
-            'fontData'
+            'fontData',
+            '_cacheIdx',
+            '_cache0',
+            '_cache1',
         ];
 
         for (let listName of listNames) {
@@ -916,71 +920,101 @@ function inject(sb3) {
             charset = " " + charset;
         }
 
-        const progressElem = document.getElementById('progress');
+        const clearData = document.getElementById("clearData").checked;
+        const clearMonitors = document.getElementById("clearMonitors").checked;
 
-        if (document.getElementById("clearData").checked) {
+        if (clearData || clearMonitors) {
 
-            if (!confirm('Do you want to clear font data? This will not delete the original file.')) {
+            if (!confirm('Font injection will be disabled. Do you want to proceed?')) {
                 return;
             }
 
-            progressElem.innerText = '(0/1)';
+            if (clearData) {
 
-            let listsToClear = [
-                sprite.l.chIndex,
-                sprite.l.chWidth,
-                sprite.l.chKern,
-                sprite.l.chData0,
-                sprite.l.chData1,
-                sprite.l.chData2,
-                sprite.l.chData3,
-                sprite.l.chData4,
-                sprite.l.fontName,
-                sprite.l.fontLicense,
-                sprite.l.fontIndex,
-                sprite.l.fontData
-            ];
+                let listsToClear = [
+                    sprite.l.chIndex,
+                    sprite.l.chWidth,
+                    sprite.l.chKern,
+                    sprite.l.chData0,
+                    sprite.l.chData1,
+                    sprite.l.chData2,
+                    sprite.l.chData3,
+                    sprite.l.chData4,
+                    sprite.l.fontName,
+                    sprite.l.fontLicense,
+                    sprite.l.fontIndex,
+                    sprite.l.fontData
+                ];
 
-            for (list of listsToClear) {
-                clearArray(list);
+                for (list of listsToClear) {
+                    clearArray(list);
+                }
+
+                sprite.costumes.splice(2, sprite.costumes.length - 2);
+                sprite.addNewChar();
+            
             }
 
-            sprite.costumes.splice(2, sprite.costumes.length - 2);
-            sprite.addNewChar();
+            if (clearMonitors) {
 
-            progressElem.innerText = '(1/1)';
+                listNames = [
+                    '_chIndex',
+                    '_chWidth',
+                    '_chKern',
+                    '_chData0',
+                    '_chData1',
+                    '_chData2',
+                    '_chData3',
+                    '_chData4',
+                    // '_fontName',
+                    // '_fontLicense',
+                    '_fontIndex',
+                    '_fontData',
+                    '_cacheIdx',
+                    '_cache0',
+                    '_cache1',
+                    '_raster',
+                    '_rasterDir',
+                    '_ww0',
+                    '_ww1',
+                    '_ww2'
+                ];
+
+                for (let i = 0; i < project.monitors.length; i++) {
+                    let monitor = project.monitors[i];
+                    if (monitor.hasOwnProperty('params')) {
+                        if (listNames.includes(monitor.params.LIST) && monitor.spriteName === spriteName) {
+                            project.monitors.splice(i, 1);
+                        }
+                    }
+                }
+
+            }
 
         } else {
 
             let useKerning = document.getElementById('useKerning').checked;
-            if (useKerning) {
-                progressSteps = 2;
-            } else {
-                progressSteps = 1;
-            }
 
             if (sprite.l.chIndex.length === 0) {
                 sprite.addNewChar();
             }
             
-            progressElem.innerText = `(0/${charset.length}) (0/${progressSteps})`;
             for (let i = 0; i < charset.length; i++) {
                 sprite.addChar(charset.charAt(i), font, fontSize);
-                progressElem.innerText = `(${i+1}/${charset.length}) (0/${progressSteps})`;
             }
 
             if (useKerning) {
-                progressElem.innerText = `(0/${charset.length}) (1/${progressSteps})`;
                 sprite.addKerning(font, fontSize);
-                progressElem.innerText = `(${charset.length}/${charset.length}) (2/${progressSteps})`;
             } else {
-                progressElem.innerText = `(${charset.length}/${charset.length}) (1/${progressSteps})`;
             }
 
             sprite.updateFontLists(font, fontName);
         }
 
+        progressElem.innerText = 'Creating file...';
         sb3.file("project.json", JSON.stringify(project));
+        
+        progressElem.innerText = 'Downloading...';
         sb3.generateAsync({type:"base64"}).then(download);
 
     }
@@ -988,11 +1022,13 @@ function inject(sb3) {
 }
 
 function download(data) {
+    const progressElem = document.getElementById("progress");
     let link = document.createElement("a");
     link.style.display = "none";
     link.download = fileName;
     link.href = "data:application/zip;base64," + data;
     document.body.appendChild(link);
     link.click();
+    progressElem.innerText = '';
     alert("The project has been downloaded");
 }
